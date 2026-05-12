@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.hallisanthe.app-mergeDebugResources-77:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "C:\\Gradle\\caches\\transforms-3\\9f580e9518ce86feafc0dc4a2902139c\\transformed\\appcompat-1.6.1\\res\\values-v16\\values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "5",
+                        "endColumns": "12",
+                        "endOffsets": "223"
+                    }
+                }
+            ]
+        }
+    ]
+}

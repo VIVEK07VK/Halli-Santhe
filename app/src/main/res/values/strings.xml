@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Halli-Santhe Digital</string>
+    <!-- REPLACE THIS with your actual Web Client ID from Firebase Console
+         Firebase Console → Authentication → Sign-in method → Google → Web SDK configuration -->
+    <string name="default_web_client_id">YOUR_WEB_CLIENT_ID_HERE.apps.googleusercontent.com</string>
+</resources>

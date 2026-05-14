@@ -10,7 +10,6 @@ Halli-Santhe Digital is a modern Hyperlocal Artisan Marketplace Android applicat
 - Buyer Authentication
 - Seller Authentication
 - Separate Buyer & Seller Dashboards
-- Session Persistence
 
 ---
 
@@ -114,3 +113,60 @@ app/
 ├── navigation/
 ├── firebase/
 └── utils/
+
+🚀 Getting Started
+Prerequisites
+Android Studio
+Kotlin SDK
+Firebase Project
+Android Emulator or Physical Device
+🔧 Installation
+git clone https://github.com/your-username/halli-santhe-digital.git
+
+Open the project in Android Studio.
+
+Sync Gradle files.
+
+Add your google-services.json file inside:
+
+app/google-services.json
+
+Run the application on an emulator or physical device.
+
+📸 Screens Included
+Splash Screen
+Role Selection
+Buyer Home
+Seller Dashboard
+Product Details
+Cart & Checkout
+Payment Screen
+Order Tracking
+Profile Screens
+🌍 Vision
+
+Halli-Santhe Digital aims to empower:
+
+Village artisans
+Rural businesses
+Local farmers
+Traditional craft sellers
+
+by helping them digitally connect with modern consumers through a scalable marketplace platform.
+
+📈 Future Improvements
+Live Delivery Tracking
+AI Product Recommendations
+Voice Search
+Multi-language Support
+Seller Analytics
+Push Notifications
+👨‍💻 Developed By
+
+Vivek
+
+Android App Development using Kotlin & Jetpack Compose.
+
+📄 License
+
+This project is developed for educational and internship purposes.

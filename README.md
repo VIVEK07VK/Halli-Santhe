@@ -100,20 +100,6 @@ Halli-Santhe Digital is a modern Hyperlocal Artisan Marketplace Android applicat
 - User Session Handling
 
 ---
-
-# 📂 Project Structure
-
-```plaintext
-app/
-├── ui/
-├── screens/
-├── components/
-├── data/
-├── models/
-├── navigation/
-├── firebase/
-└── utils/
-
 🚀 Getting Started
 Prerequisites
 Android Studio
@@ -168,5 +154,7 @@ Vivek
 Android App Development using Kotlin & Jetpack Compose.
 
 📄 License
+
+This project is developed for educational and internship purposes.
 
 This project is developed for educational and internship purposes.

@@ -37,6 +37,10 @@ class ProductRepository(private val productDao: ProductDao) {
         }
     }
 
+    fun getLocalProductCountBySeller(sellerId: String): Flow<Int> {
+        return productDao.getProductCountBySeller(sellerId)
+    }
+
     suspend fun addProduct(product: Product) {
         val finalId = if (product.id.isNotEmpty()) product.id else UUID.randomUUID().toString()
         val finalProduct = if (product.id.isNotEmpty()) product else product.copy(id = finalId)
@@ -66,6 +70,7 @@ class ProductRepository(private val productDao: ProductDao) {
     suspend fun deleteProduct(productId: String) {
         try {
             FirebaseManager.firestore.collection("products").document(productId).delete().await()
+            productDao.deleteProduct(productId)
         } catch (e: Exception) {
             e.printStackTrace()
         }

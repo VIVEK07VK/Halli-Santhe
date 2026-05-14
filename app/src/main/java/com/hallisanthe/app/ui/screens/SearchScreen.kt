@@ -221,45 +221,65 @@ fun SearchResultItem(
     onFavoriteClick: () -> Unit,
     onClick: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     Card(
         modifier = Modifier.fillMaxWidth().clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(1.dp)
     ) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(BackgroundLight.copy(alpha = 0.5f)),
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = ProductImageMapper.getIllustration(product),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize().padding(8.dp),
-                    contentScale = ContentScale.Fit
-                )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(product.name, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = PrimaryGreenDark)
-                Text(product.sellerName, fontSize = 12.sp, color = TextSecondary)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text("₹${product.price.toInt()}", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = PrimaryGreen)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                IconButton(onClick = onFavoriteClick) {
-                    Icon(
-                        if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(BackgroundLight.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AsyncImage(
+                        model = ProductImageMapper.getIllustration(product),
                         contentDescription = null,
-                        tint = if (isFavorite) DiscountRed else Color.LightGray
+                        modifier = Modifier.fillMaxSize().padding(8.dp),
+                        contentScale = ContentScale.Fit
                     )
                 }
-                IconButton(onClick = onAddToCart, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.AddCircleOutline, contentDescription = null, tint = DiscountRed)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(product.name, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = PrimaryGreenDark)
+                    Text(product.sellerName, fontSize = 12.sp, color = TextSecondary)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("₹${product.price.toInt()}", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp, color = PrimaryGreen)
                 }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    IconButton(onClick = onFavoriteClick) {
+                        Icon(
+                            if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = null,
+                            tint = if (isFavorite) DiscountRed else Color.LightGray
+                        )
+                    }
+                    IconButton(onClick = onAddToCart, modifier = Modifier.size(32.dp)) {
+                        Icon(Icons.Default.AddCircleOutline, contentDescription = null, tint = DiscountRed)
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Strong CTA Button
+            Button(
+                onClick = {
+                    android.widget.Toast.makeText(context, "Seller contacted successfully", android.widget.Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth().height(40.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreenDark),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Icon(Icons.Default.Store, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Contact Seller", fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

@@ -35,6 +35,7 @@ fun EditProfileScreen(
     onBack: () -> Unit
 ) {
     val userProfile by profileViewModel.userProfile.collectAsState()
+    val isSeller = userProfile?.role?.equals("SELLER", ignoreCase = true) == true
     
     var fullName by remember { mutableStateOf("") }
     var shopName by remember { mutableStateOf("") }
@@ -62,21 +63,23 @@ fun EditProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Profile", fontWeight = FontWeight.Bold) },
+                title = { Text(if (isSeller) "Edit Seller Profile" else "Edit Buyer Profile", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
             )
-        }
+        },
+        containerColor = BackgroundLight
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Image Section
@@ -86,72 +89,82 @@ fun EditProfileScreen(
                     .clickable { launcher.launch("image/*") },
                 contentAlignment = Alignment.BottomEnd
             ) {
-                AsyncImage(
-                    model = imageUri ?: userProfile?.profileImageUrl ?: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-                    contentDescription = "Profile Image",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                        .background(Color.LightGray),
-                    contentScale = ContentScale.Crop
-                )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    shape = CircleShape,
+                    color = SurfaceLight,
+                    shadowElevation = 4.dp
+                ) {
+                    AsyncImage(
+                        model = imageUri ?: userProfile?.profileImageUrl ?: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+                        contentDescription = "Profile Image",
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                }
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(36.dp)
                         .background(PrimaryGreen, CircleShape)
-                        .padding(4.dp),
+                        .padding(8.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.CameraAlt, contentDescription = "Edit Image", tint = Color.White, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.CameraAlt, contentDescription = "Edit Image", tint = Color.White, modifier = Modifier.size(18.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             AppTextField(
                 value = fullName,
                 onValueChange = { fullName = it },
                 label = "Full Name",
+                placeholder = "Enter your full name",
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            if (isSeller) {
+                Spacer(modifier = Modifier.height(16.dp))
+                AppTextField(
+                    value = shopName,
+                    onValueChange = { shopName = it },
+                    label = "Shop Name",
+                    placeholder = "e.g. Grandma's Pickles",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            AppTextField(
-                value = shopName,
-                onValueChange = { shopName = it },
-                label = "Shop Name",
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            AppTextField(
-                value = businessAddress,
-                onValueChange = { businessAddress = it },
-                label = "Business Address",
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             AppTextField(
                 value = phone,
                 onValueChange = { phone = it },
                 label = "Phone Number",
+                placeholder = "+91 00000 00000",
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             AppTextField(
                 value = villageName,
                 onValueChange = { villageName = it },
-                label = "Village Name",
+                label = if (isSeller) "Village Name" else "Village / Town",
+                placeholder = "Enter your village or town",
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+
+            AppTextField(
+                value = businessAddress,
+                onValueChange = { businessAddress = it },
+                label = if (isSeller) "Business Address" else "Pickup / Delivery Address",
+                placeholder = if (isSeller) "Enter shop/business address" else "House No, Street, Landmark",
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
 
             Button(
                 onClick = {
@@ -160,12 +173,14 @@ fun EditProfileScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreenDark)
             ) {
-                Text("Save Changes", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("SAVE CHANGES", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
             }
+            
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }

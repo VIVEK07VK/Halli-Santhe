@@ -116,7 +116,7 @@ public final class FavoriteDao_Impl implements FavoriteDao {
 
   @Override
   public Object insertFavorite(final FavoriteEntity favorite,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -130,12 +130,11 @@ public final class FavoriteDao_Impl implements FavoriteDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object deleteFavoriteById(final String productId,
-      final Continuation<? super Unit> $completion) {
+  public Object deleteFavoriteById(final String productId, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -160,7 +159,7 @@ public final class FavoriteDao_Impl implements FavoriteDao {
           __preparedStmtOfDeleteFavoriteById.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
@@ -272,8 +271,7 @@ public final class FavoriteDao_Impl implements FavoriteDao {
   }
 
   @Override
-  public Object isFavorite(final String productId,
-      final Continuation<? super Integer> $completion) {
+  public Object isFavorite(final String productId, final Continuation<? super Integer> arg1) {
     final String _sql = "SELECT COUNT(*) FROM favorites WHERE productId = ?";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -307,7 +305,7 @@ public final class FavoriteDao_Impl implements FavoriteDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @NonNull

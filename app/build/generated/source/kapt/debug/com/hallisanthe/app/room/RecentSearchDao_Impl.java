@@ -76,7 +76,7 @@ public final class RecentSearchDao_Impl implements RecentSearchDao {
 
   @Override
   public Object insertSearch(final RecentSearchEntity search,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -90,11 +90,11 @@ public final class RecentSearchDao_Impl implements RecentSearchDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object deleteSearch(final String query, final Continuation<? super Unit> $completion) {
+  public Object deleteSearch(final String query, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -119,11 +119,11 @@ public final class RecentSearchDao_Impl implements RecentSearchDao {
           __preparedStmtOfDeleteSearch.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object clearAll(final Continuation<? super Unit> $completion) {
+  public Object clearAll(final Continuation<? super Unit> arg0) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -142,7 +142,7 @@ public final class RecentSearchDao_Impl implements RecentSearchDao {
           __preparedStmtOfClearAll.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @Override

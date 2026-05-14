@@ -113,9 +113,27 @@ fun ProfileScreen(
                     Column {
                         Text(displayName, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = PrimaryGreenDark)
                         Text(displayEmail, fontSize = 14.sp, color = TextSecondary)
-                        if (sessionUser?.phone?.isNotBlank() == true) {
-                            Text(sessionUser!!.phone, fontSize = 13.sp, color = TextSecondary)
+                        
+                        val phone = userProfile?.phone?.ifBlank { sessionUser?.phone } ?: ""
+                        if (phone.isNotBlank()) {
+                            Text(phone, fontSize = 13.sp, color = TextSecondary)
                         }
+
+                        val location = buildString {
+                            if (!userProfile?.villageName.isNullOrBlank()) append(userProfile?.villageName)
+                            if (!userProfile?.businessAddress.isNullOrBlank()) {
+                                if (isNotEmpty()) append(", ")
+                                append(userProfile?.businessAddress)
+                            }
+                        }
+                        if (location.isNotBlank()) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
+                                Icon(Icons.Default.LocationOn, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(location, fontSize = 12.sp, color = TextSecondary, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(8.dp))
                         Box(
                             modifier = Modifier
@@ -123,7 +141,7 @@ fun ProfileScreen(
                                 .background(PrimaryGreen.copy(alpha = 0.15f))
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
-                            Text("BUYER", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryGreen)
+                            Text(userProfile?.role ?: "BUYER", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryGreen)
                         }
                     }
                 }

@@ -166,7 +166,7 @@ public final class CartDao_Impl implements CartDao {
 
   @Override
   public Object insertOrUpdateCartItem(final CartItem cartItem,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -180,12 +180,11 @@ public final class CartDao_Impl implements CartDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object deleteCartItem(final CartItem cartItem,
-      final Continuation<? super Unit> $completion) {
+  public Object deleteCartItem(final CartItem cartItem, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -199,12 +198,11 @@ public final class CartDao_Impl implements CartDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object updateCartItem(final CartItem cartItem,
-      final Continuation<? super Unit> $completion) {
+  public Object updateCartItem(final CartItem cartItem, final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -218,11 +216,11 @@ public final class CartDao_Impl implements CartDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object clearCart(final Continuation<? super Unit> $completion) {
+  public Object clearCart(final Continuation<? super Unit> arg0) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -241,7 +239,7 @@ public final class CartDao_Impl implements CartDao {
           __preparedStmtOfClearCart.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @Override
@@ -322,8 +320,7 @@ public final class CartDao_Impl implements CartDao {
   }
 
   @Override
-  public Object getCartItemById(final String productId,
-      final Continuation<? super CartItem> $completion) {
+  public Object getCartItemById(final String productId, final Continuation<? super CartItem> arg1) {
     final String _sql = "SELECT * FROM cart_items WHERE productId = ? LIMIT 1";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
     int _argIndex = 1;
@@ -399,7 +396,7 @@ public final class CartDao_Impl implements CartDao {
           _statement.release();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @NonNull

@@ -103,7 +103,7 @@ public final class RecentlyViewedDao_Impl implements RecentlyViewedDao {
 
   @Override
   public Object insertProduct(final RecentlyViewedProduct product,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -117,12 +117,12 @@ public final class RecentlyViewedDao_Impl implements RecentlyViewedDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
   public Object deleteProduct(final RecentlyViewedProduct product,
-      final Continuation<? super Unit> $completion) {
+      final Continuation<? super Unit> arg1) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -136,11 +136,11 @@ public final class RecentlyViewedDao_Impl implements RecentlyViewedDao {
           __db.endTransaction();
         }
       }
-    }, $completion);
+    }, arg1);
   }
 
   @Override
-  public Object clearAll(final Continuation<? super Unit> $completion) {
+  public Object clearAll(final Continuation<? super Unit> arg0) {
     return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
       @Override
       @NonNull
@@ -159,7 +159,7 @@ public final class RecentlyViewedDao_Impl implements RecentlyViewedDao {
           __preparedStmtOfClearAll.release(_stmt);
         }
       }
-    }, $completion);
+    }, arg0);
   }
 
   @Override

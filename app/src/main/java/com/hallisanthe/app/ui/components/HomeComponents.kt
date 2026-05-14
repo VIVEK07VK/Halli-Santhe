@@ -203,13 +203,14 @@ fun RecommendedProductCard(
     onFavoriteClick: () -> Unit,
     onClick: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val favColor by androidx.compose.animation.animateColorAsState(
         targetValue    = if (isFavorite) DiscountRed else TextSecondary.copy(alpha = 0.5f),
         label          = "favColor"
     )
 
     Card(
-        modifier = Modifier.width(170.dp).height(260.dp).padding(4.dp).clickable { onClick() },
+        modifier = Modifier.width(180.dp).padding(4.dp).clickable { onClick() },
         shape    = RoundedCornerShape(20.dp),
         colors   = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -271,14 +272,14 @@ fun RecommendedProductCard(
                     Text("• ${product.unit}", fontSize = 11.sp, color = TextSecondary)
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(8.dp))
                 
                 Row(
                     modifier              = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment     = Alignment.CenterVertically
                 ) {
-                    Text(text = "₹${product.price.toInt()}", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = PrimaryGreenDark)
+                    Text(text = "₹${product.price.toInt()}", fontSize = 16.sp, fontWeight = FontWeight.ExtraBold, color = PrimaryGreenDark)
                     
                     Surface(
                         onClick = onAddToCart,
@@ -290,6 +291,23 @@ fun RecommendedProductCard(
                             Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                     }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Strong CTA Button
+                Button(
+                    onClick = {
+                        android.widget.Toast.makeText(context, "Seller contacted successfully", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth().height(36.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1B3A2D)),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    Icon(Icons.Default.Store, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.White)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Contact Seller", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

@@ -1,21 +1,26 @@
 package com.hallisanthe.app.viewmodel
 
+import android.app.Application
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.hallisanthe.app.models.UserModel
 import com.hallisanthe.app.repository.AuthRepository
 import com.hallisanthe.app.firebase.FirebaseAuthManager
 import com.hallisanthe.app.firebase.FirebaseStorageManager
 import com.hallisanthe.app.repository.ProfileStatsRepository
+import com.hallisanthe.app.repository.ProductRepository
+import com.hallisanthe.app.room.DatabaseProvider
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class SellerProfileViewModel : ViewModel() {
+class SellerProfileViewModel(application: Application) : AndroidViewModel(application) {
     private val authRepository = AuthRepository()
     private val authManager = FirebaseAuthManager()
     private val statsRepository = ProfileStatsRepository()
+    private val productDao = DatabaseProvider.getDatabase(application).productDao()
+    private val productRepository = ProductRepository(productDao)
 
     private val _sellerProfile = MutableStateFlow<UserModel?>(null)
     val sellerProfile: StateFlow<UserModel?> = _sellerProfile.asStateFlow()
@@ -38,8 +43,8 @@ class SellerProfileViewModel : ViewModel() {
             _sellerProfile.value = user
             
             if (user != null) {
-                // Load stats in real-time
-                statsRepository.getProductCount(user.uid).collect { count ->
+                // Use local count for faster, more reliable updates
+                productRepository.getLocalProductCountBySeller(user.uid).collect { count ->
                     _productCount.value = count
                 }
             }

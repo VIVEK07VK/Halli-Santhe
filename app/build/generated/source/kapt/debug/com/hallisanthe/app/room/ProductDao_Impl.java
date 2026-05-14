@@ -6,6 +6,7 @@ import androidx.room.CoroutinesRoom;
 import androidx.room.EntityInsertionAdapter;
 import androidx.room.RoomDatabase;
 import androidx.room.RoomSQLiteQuery;
+import androidx.room.SharedSQLiteStatement;
 import androidx.room.util.CursorUtil;
 import androidx.room.util.DBUtil;
 import androidx.sqlite.db.SupportSQLiteStatement;
@@ -32,6 +33,8 @@ public final class ProductDao_Impl implements ProductDao {
   private final RoomDatabase __db;
 
   private final EntityInsertionAdapter<Product> __insertionAdapterOfProduct;
+
+  private final SharedSQLiteStatement __preparedStmtOfDeleteProduct;
 
   public ProductDao_Impl(@NonNull final RoomDatabase __db) {
     this.__db = __db;
@@ -107,6 +110,14 @@ public final class ProductDao_Impl implements ProductDao {
         }
       }
     };
+    this.__preparedStmtOfDeleteProduct = new SharedSQLiteStatement(__db) {
+      @Override
+      @NonNull
+      public String createQuery() {
+        final String _query = "DELETE FROM products WHERE id = ?";
+        return _query;
+      }
+    };
   }
 
   @Override
@@ -123,6 +134,36 @@ public final class ProductDao_Impl implements ProductDao {
           return Unit.INSTANCE;
         } finally {
           __db.endTransaction();
+        }
+      }
+    }, $completion);
+  }
+
+  @Override
+  public Object deleteProduct(final String productId,
+      final Continuation<? super Unit> $completion) {
+    return CoroutinesRoom.execute(__db, true, new Callable<Unit>() {
+      @Override
+      @NonNull
+      public Unit call() throws Exception {
+        final SupportSQLiteStatement _stmt = __preparedStmtOfDeleteProduct.acquire();
+        int _argIndex = 1;
+        if (productId == null) {
+          _stmt.bindNull(_argIndex);
+        } else {
+          _stmt.bindString(_argIndex, productId);
+        }
+        try {
+          __db.beginTransaction();
+          try {
+            _stmt.executeUpdateDelete();
+            __db.setTransactionSuccessful();
+            return Unit.INSTANCE;
+          } finally {
+            __db.endTransaction();
+          }
+        } finally {
+          __preparedStmtOfDeleteProduct.release(_stmt);
         }
       }
     }, $completion);
@@ -234,6 +275,47 @@ public final class ProductDao_Impl implements ProductDao {
             }
             _item = new Product(_tmpId,_tmpName,_tmpDescription,_tmpPrice,_tmpStock,_tmpCategory,_tmpSellerName,_tmpSellerId,_tmpImageUrl,_tmpUnit,_tmpRating,_tmpDiscountPercent,_tmpTag,_tmpIsFavorite,_tmpDeliveryTime);
             _result.add(_item);
+          }
+          return _result;
+        } finally {
+          _cursor.close();
+        }
+      }
+
+      @Override
+      protected void finalize() {
+        _statement.release();
+      }
+    });
+  }
+
+  @Override
+  public Flow<Integer> getProductCountBySeller(final String sellerId) {
+    final String _sql = "SELECT COUNT(*) FROM products WHERE sellerId = ?";
+    final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 1);
+    int _argIndex = 1;
+    if (sellerId == null) {
+      _statement.bindNull(_argIndex);
+    } else {
+      _statement.bindString(_argIndex, sellerId);
+    }
+    return CoroutinesRoom.createFlow(__db, false, new String[] {"products"}, new Callable<Integer>() {
+      @Override
+      @NonNull
+      public Integer call() throws Exception {
+        final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
+        try {
+          final Integer _result;
+          if (_cursor.moveToFirst()) {
+            final Integer _tmp;
+            if (_cursor.isNull(0)) {
+              _tmp = null;
+            } else {
+              _tmp = _cursor.getInt(0);
+            }
+            _result = _tmp;
+          } else {
+            _result = null;
           }
           return _result;
         } finally {

@@ -42,13 +42,13 @@ public final class AppDatabase_Impl extends AppDatabase {
     final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(4) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS `products` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `price` REAL NOT NULL, `stock` INTEGER NOT NULL, `category` TEXT NOT NULL, `sellerName` TEXT NOT NULL, `sellerId` TEXT NOT NULL, `imageUrl` TEXT NOT NULL, `unit` TEXT NOT NULL, `rating` REAL NOT NULL, `discountPercent` INTEGER, `tag` TEXT, `isFavorite` INTEGER NOT NULL, PRIMARY KEY(`id`))");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `products` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `price` REAL NOT NULL, `stock` INTEGER NOT NULL, `category` TEXT NOT NULL, `sellerName` TEXT NOT NULL, `sellerId` TEXT NOT NULL, `imageUrl` TEXT NOT NULL, `unit` TEXT NOT NULL, `rating` REAL NOT NULL, `discountPercent` INTEGER, `tag` TEXT, `isFavorite` INTEGER NOT NULL, `deliveryTime` TEXT NOT NULL, PRIMARY KEY(`id`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `cart_items` (`productId` TEXT NOT NULL, `name` TEXT NOT NULL, `price` REAL NOT NULL, `imageUrl` TEXT NOT NULL, `quantity` INTEGER NOT NULL, `category` TEXT NOT NULL, `unit` TEXT NOT NULL, `sellerId` TEXT NOT NULL, PRIMARY KEY(`productId`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `favorites` (`productId` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `price` REAL NOT NULL, `stock` INTEGER NOT NULL, `category` TEXT NOT NULL, `sellerName` TEXT NOT NULL, `sellerId` TEXT NOT NULL, `imageUrl` TEXT NOT NULL, `unit` TEXT NOT NULL, `rating` REAL NOT NULL, `discountPercent` INTEGER, `tag` TEXT, PRIMARY KEY(`productId`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `recently_viewed` (`productId` TEXT NOT NULL, `name` TEXT NOT NULL, `imageUrl` TEXT NOT NULL, `price` REAL NOT NULL, `category` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`productId`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS `recent_searches` (`query` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`query`))");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'abb545bffc82d078e743eea07530b865')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ac2b4a26d68f9306194f6fe42d96c0d0')");
       }
 
       @Override
@@ -101,7 +101,7 @@ public final class AppDatabase_Impl extends AppDatabase {
       @NonNull
       public RoomOpenHelper.ValidationResult onValidateSchema(
           @NonNull final SupportSQLiteDatabase db) {
-        final HashMap<String, TableInfo.Column> _columnsProducts = new HashMap<String, TableInfo.Column>(14);
+        final HashMap<String, TableInfo.Column> _columnsProducts = new HashMap<String, TableInfo.Column>(15);
         _columnsProducts.put("id", new TableInfo.Column("id", "TEXT", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsProducts.put("name", new TableInfo.Column("name", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsProducts.put("description", new TableInfo.Column("description", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
@@ -116,6 +116,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         _columnsProducts.put("discountPercent", new TableInfo.Column("discountPercent", "INTEGER", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsProducts.put("tag", new TableInfo.Column("tag", "TEXT", false, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsProducts.put("isFavorite", new TableInfo.Column("isFavorite", "INTEGER", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsProducts.put("deliveryTime", new TableInfo.Column("deliveryTime", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysProducts = new HashSet<TableInfo.ForeignKey>(0);
         final HashSet<TableInfo.Index> _indicesProducts = new HashSet<TableInfo.Index>(0);
         final TableInfo _infoProducts = new TableInfo("products", _columnsProducts, _foreignKeysProducts, _indicesProducts);
@@ -196,7 +197,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "abb545bffc82d078e743eea07530b865", "73f43fb507b00643d1ae8b21c426b5f6");
+    }, "ac2b4a26d68f9306194f6fe42d96c0d0", "4eb1632f03a99e0617495552c17f2ce0");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

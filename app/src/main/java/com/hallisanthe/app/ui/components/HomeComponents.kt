@@ -15,22 +15,30 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hallisanthe.app.ui.theme.*
+import com.hallisanthe.app.utils.ProductImageMapper
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeTopAppBar(cartCount: Int, onProfileClick: () -> Unit, onCartClick: () -> Unit) {
     TopAppBar(
         title = {
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp)
+            ) {
                 Text(
                     text       = "Halli-Santhe",
-                    color      = DiscountRed,
+                    color      = PrimaryGreenDark,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize   = 24.sp,
                     fontFamily = androidx.compose.ui.text.font.FontFamily.Serif
@@ -47,20 +55,20 @@ fun HomeTopAppBar(cartCount: Int, onProfileClick: () -> Unit, onCartClick: () ->
         actions = {
             Box {
                 IconButton(onClick = onCartClick) {
-                    Icon(Icons.Outlined.ShoppingCart, contentDescription = "Cart", tint = DiscountRed)
+                    Icon(Icons.Outlined.ShoppingCart, contentDescription = "Cart", tint = PrimaryGreenDark)
                 }
                 if (cartCount > 0) {
                     Badge(
                         modifier           = Modifier.align(Alignment.TopEnd).offset((-4).dp, 4.dp),
                         containerColor     = SecondaryOrange,
-                        contentColor       = SurfaceLight
+                        contentColor       = Color.White
                     ) {
                         Text(if (cartCount > 9) "9+" else cartCount.toString(), fontSize = 9.sp)
                     }
                 }
             }
             IconButton(onClick = onProfileClick) {
-                Icon(Icons.Outlined.PersonOutline, contentDescription = "Profile", tint = DiscountRed)
+                Icon(Icons.Outlined.PersonOutline, contentDescription = "Profile", tint = PrimaryGreenDark)
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
@@ -112,54 +120,57 @@ fun HomeBottomNavigation(
                 },
                 label     = { Text(item.label, fontSize = 10.sp) },
                 colors    = NavigationBarItemDefaults.colors(
-                    selectedIconColor   = DiscountRed,
-                    selectedTextColor   = DiscountRed,
+                    selectedIconColor   = PrimaryGreenDark,
+                    selectedTextColor   = PrimaryGreenDark,
                     unselectedIconColor = TextSecondary,
                     unselectedTextColor = TextSecondary,
-                    indicatorColor      = BackgroundLight
+                    indicatorColor      = BackgroundLight.copy(alpha = 0.5f)
                 )
             )
         }
     }
 }
 
-// ─── Hero Banner ──────────────────────────────────────────────────────────────
-
 @Composable
 fun HeroBanner(onExploreClick: () -> Unit = {}) {
     Card(
         modifier  = Modifier.fillMaxWidth().padding(16.dp),
         shape     = RoundedCornerShape(24.dp),
-        colors    = CardDefaults.cardColors(containerColor = BannerDark)
+        colors    = CardDefaults.cardColors(containerColor = PrimaryGreenDark)
     ) {
-        Column(modifier = Modifier.padding(24.dp)) {
-            Text(
-                text       = "Authentic\nVillage\nGoodness",
-                color      = SurfaceLight,
-                fontSize   = 28.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
-                lineHeight = 34.sp
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text  = "Direct from local artisans to\nyour doorstep.",
-                color = SurfaceLight.copy(alpha = 0.8f),
-                fontSize = 14.sp
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(
-                onClick = onExploreClick,
-                colors  = ButtonDefaults.buttonColors(containerColor = SecondaryOrange),
-                shape   = RoundedCornerShape(20.dp)
-            ) {
-                Text("EXPLORE NOW", fontWeight = FontWeight.Bold, color = BannerDark, fontSize = 12.sp)
+        Row(
+            modifier = Modifier.padding(24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text       = "Authentic\nVillage\nGoodness",
+                    color      = Color.White,
+                    fontSize   = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Serif,
+                    lineHeight = 34.sp
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text  = "Direct from local artisans to your doorstep.",
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = onExploreClick,
+                    colors  = ButtonDefaults.buttonColors(containerColor = SecondaryOrange),
+                    shape   = RoundedCornerShape(20.dp)
+                ) {
+                    Text("EXPLORE NOW", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 12.sp)
+                }
             }
+            // Optional: Add a 3D illustration here if needed
+            Text("🌾", fontSize = 64.sp)
         }
     }
 }
-
-// ─── Section Header ───────────────────────────────────────────────────────────
 
 @Composable
 fun SectionHeader(title: String, actionText: String?, actionIcon: ImageVector? = null, onActionClick: () -> Unit = {}) {
@@ -184,8 +195,6 @@ fun SectionHeader(title: String, actionText: String?, actionIcon: ImageVector? =
     }
 }
 
-// ─── Recommended Product Card (large) ────────────────────────────────────────
-
 @Composable
 fun RecommendedProductCard(
     product: com.hallisanthe.app.models.Product,
@@ -195,99 +204,90 @@ fun RecommendedProductCard(
     onClick: () -> Unit
 ) {
     val favColor by androidx.compose.animation.animateColorAsState(
-        targetValue    = if (isFavorite) DiscountRed else TextSecondary,
-        animationSpec  = androidx.compose.animation.core.spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMedium),
+        targetValue    = if (isFavorite) DiscountRed else TextSecondary.copy(alpha = 0.5f),
         label          = "favColor"
     )
 
     Card(
-        modifier = Modifier.width(160.dp).height(230.dp).clickable { onClick() },
-        shape    = RoundedCornerShape(16.dp),
-        colors   = CardDefaults.cardColors(containerColor = SurfaceLight)
+        modifier = Modifier.width(170.dp).height(260.dp).padding(4.dp).clickable { onClick() },
+        shape    = RoundedCornerShape(20.dp),
+        colors   = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column {
-                Box(
-                    modifier = Modifier.fillMaxWidth().height(130.dp).background(androidx.compose.ui.graphics.Color(0xFFF5F5F5))
+        Column {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(140.dp).background(Color(0xFFF9F9F9))
+            ) {
+                AsyncImage(
+                    model            = ProductImageMapper.getIllustration(product),
+                    contentDescription = product.name,
+                    modifier         = Modifier.fillMaxSize().padding(16.dp),
+                    contentScale     = ContentScale.Fit,
+                    alignment        = Alignment.Center
+                )
+
+                // Favorite Icon
+                IconButton(
+                    onClick  = onFavoriteClick,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)
                 ) {
-                    coil.compose.AsyncImage(
-                        model            = product.imageUrl,
-                        contentDescription = product.name,
-                        modifier         = Modifier.fillMaxSize(),
-                        contentScale     = ContentScale.Crop
+                    Icon(
+                        imageVector  = if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Favorite",
+                        tint         = favColor,
+                        modifier     = Modifier.size(24.dp).background(Color.White.copy(alpha = 0.8f), CircleShape).padding(4.dp)
                     )
-
-                    // Badges
-                    Column(modifier = Modifier.padding(8.dp)) {
-                        if (product.discountPercent != null) {
-                            Box(
-                                modifier = Modifier.clip(RoundedCornerShape(4.dp))
-                                    .background(DiscountRed)
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text("${product.discountPercent}% OFF", color = SurfaceLight, fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                        }
-                        if (product.tag != null) {
-                            Box(
-                                modifier = Modifier.clip(RoundedCornerShape(4.dp))
-                                    .background(BannerDark)
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(product.tag, color = SurfaceLight, fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-
-                    // Favorite Icon – FUNCTIONAL
-                    IconButton(
-                        onClick  = onFavoriteClick,
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    ) {
-                        Icon(
-                            imageVector  = if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
-                            contentDescription = "Favorite",
-                            tint         = favColor,
-                            modifier     = Modifier.size(24.dp).background(SurfaceLight, CircleShape).padding(4.dp)
-                        )
-                    }
-
-                    // Rating
-                    Box(
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp)
-                            .clip(RoundedCornerShape(12.dp)).background(SurfaceLight)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.Star, contentDescription = null, tint = SecondaryOrange, modifier = Modifier.size(12.dp))
-                            Spacer(modifier = Modifier.width(2.dp))
-                            Text("${product.rating}", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
                 }
 
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text     = product.name,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color    = PrimaryGreenDark,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Row(
-                        modifier              = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment     = Alignment.CenterVertically
+                // Delivery Time Badge
+                Box(
+                    modifier = Modifier.align(Alignment.BottomStart).padding(8.dp)
+                        .clip(RoundedCornerShape(8.dp)).background(Color.White.copy(alpha = 0.9f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.Timer, contentDescription = null, tint = SecondaryOrange, modifier = Modifier.size(10.dp))
+                        Spacer(modifier = Modifier.width(2.dp))
+                        Text(product.deliveryTime, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = PrimaryGreenDark)
+                    }
+                }
+            }
+
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text     = product.name,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color    = PrimaryGreenDark,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Filled.Star, contentDescription = null, tint = SecondaryOrange, modifier = Modifier.size(12.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text("${product.rating}", fontSize = 11.sp, color = TextSecondary)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("• ${product.unit}", fontSize = 11.sp, color = TextSecondary)
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+                
+                Row(
+                    modifier              = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment     = Alignment.CenterVertically
+                ) {
+                    Text(text = "₹${product.price.toInt()}", fontSize = 18.sp, fontWeight = FontWeight.ExtraBold, color = PrimaryGreenDark)
+                    
+                    Surface(
+                        onClick = onAddToCart,
+                        modifier = Modifier.size(32.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        color = PrimaryGreenDark
                     ) {
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            Text(text = "₹${product.price.toInt()}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = PrimaryGreenDark)
-                            Text(text = " / ${product.unit}", fontSize = 10.sp, color = TextSecondary, modifier = Modifier.padding(bottom = 2.dp))
-                        }
-                        IconButton(onClick = onAddToCart, modifier = Modifier.size(28.dp)) {
-                            Icon(imageVector = Icons.Default.AddCircleOutline, contentDescription = "Add", tint = DiscountRed, modifier = Modifier.size(24.dp))
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                     }
                 }
@@ -295,8 +295,6 @@ fun RecommendedProductCard(
         }
     }
 }
-
-// ─── Small Product Row & Card ─────────────────────────────────────────────────
 
 @Composable
 fun SmallProductRow(
@@ -307,10 +305,10 @@ fun SmallProductRow(
     onFavoriteClick: ((com.hallisanthe.app.models.Product) -> Unit)? = null
 ) {
     androidx.compose.foundation.lazy.LazyRow(
-        contentPadding        = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        contentPadding        = PaddingValues(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(products) { product ->
+        items(products, key = { it.id }) { product ->
             SmallProductCard(
                 product        = product,
                 isFavorite     = favoriteIds.contains(product.id),
@@ -330,36 +328,32 @@ fun SmallProductCard(
     onFavoriteClick: () -> Unit = {},
     onClick: () -> Unit
 ) {
-    val favColor by androidx.compose.animation.animateColorAsState(
-        targetValue   = if (isFavorite) DiscountRed else TextSecondary,
-        animationSpec = androidx.compose.animation.core.spring(stiffness = androidx.compose.animation.core.Spring.StiffnessMedium),
-        label         = "favColorSmall"
-    )
-
     Card(
-        modifier = Modifier.width(110.dp).clickable { onClick() },
-        shape    = RoundedCornerShape(12.dp),
-        colors   = CardDefaults.cardColors(containerColor = SurfaceLight)
+        modifier = Modifier.width(120.dp).padding(4.dp).clickable { onClick() },
+        shape    = RoundedCornerShape(16.dp),
+        colors   = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
             Box(
-                modifier = Modifier.fillMaxWidth().height(90.dp).background(androidx.compose.ui.graphics.Color(0xFFF5F5F5))
+                modifier = Modifier.fillMaxWidth().height(100.dp).background(Color(0xFFF9F9F9))
             ) {
-                coil.compose.AsyncImage(
-                    model            = product.imageUrl,
+                AsyncImage(
+                    model            = ProductImageMapper.getIllustration(product),
                     contentDescription = product.name,
-                    modifier         = Modifier.fillMaxSize(),
-                    contentScale     = ContentScale.Crop
+                    modifier         = Modifier.fillMaxSize().padding(12.dp),
+                    contentScale     = ContentScale.Fit,
+                    alignment        = Alignment.Center
                 )
-                // Fav icon top-end
+                
                 IconButton(
                     onClick  = onFavoriteClick,
-                    modifier = Modifier.size(26.dp).align(Alignment.TopEnd)
+                    modifier = Modifier.size(28.dp).align(Alignment.TopEnd)
                 ) {
                     Icon(
                         imageVector  = if (isFavorite) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite",
-                        tint         = favColor,
+                        tint         = if (isFavorite) DiscountRed else TextSecondary.copy(alpha = 0.4f),
                         modifier     = Modifier.size(16.dp)
                     )
                 }
@@ -367,17 +361,24 @@ fun SmallProductCard(
             Column(modifier = Modifier.padding(8.dp)) {
                 Text(
                     text       = product.name,
-                    fontSize   = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontSize   = 12.sp,
+                    fontWeight = FontWeight.Bold,
                     color      = PrimaryGreenDark,
                     maxLines   = 1,
-                    overflow   = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    overflow   = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "₹${product.price.toInt()}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextSecondary)
-                    IconButton(onClick = onAddToCart, modifier = Modifier.size(20.dp)) {
-                        Icon(Icons.Default.AddCircleOutline, contentDescription = "Add", tint = DiscountRed, modifier = Modifier.size(16.dp))
+                    Text(text = "₹${product.price.toInt()}", fontSize = 13.sp, fontWeight = FontWeight.ExtraBold, color = PrimaryGreenDark)
+                    Surface(
+                        onClick = onAddToCart,
+                        modifier = Modifier.size(24.dp),
+                        shape = RoundedCornerShape(6.dp),
+                        color = SecondaryOrange.copy(alpha = 0.1f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.Add, contentDescription = "Add", tint = SecondaryOrange, modifier = Modifier.size(16.dp))
+                        }
                     }
                 }
             }

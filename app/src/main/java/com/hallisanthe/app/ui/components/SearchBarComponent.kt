@@ -30,14 +30,14 @@ fun SearchBarComponent(
 ) {
     val focusManager = LocalFocusManager.current
 
-    TextField(
+    OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
         modifier = modifier
             .fillMaxWidth()
             .shadow(2.dp, RoundedCornerShape(28.dp))
             .background(SurfaceLight, RoundedCornerShape(28.dp)),
-        placeholder = { Text("Search products or artisans...", color = TextSecondary, fontSize = 14.sp) },
+        placeholder = { Text("Search products or artisans...", color = TextFieldPlaceholder, fontSize = 14.sp) },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = DiscountRed) },
         trailingIcon = {
             if (query.isNotEmpty()) {
@@ -48,11 +48,12 @@ fun SearchBarComponent(
         },
         singleLine = true,
         shape = RoundedCornerShape(28.dp),
-        colors = TextFieldDefaults.textFieldColors(
-            containerColor = Color.Transparent,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-            cursorColor = PrimaryGreen
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+            cursorColor = CursorColor,
+            focusedPlaceholderColor = TextFieldPlaceholder,
+            unfocusedPlaceholderColor = TextFieldPlaceholder
         ),
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
         keyboardActions = KeyboardActions(onSearch = {

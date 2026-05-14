@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.PersonOutline
@@ -29,6 +31,7 @@ import com.hallisanthe.app.models.Product
 import com.hallisanthe.app.ui.theme.*
 import com.hallisanthe.app.viewmodel.EarningsViewModel
 import com.hallisanthe.app.viewmodel.SellerViewModel
+import com.hallisanthe.app.ui.components.AppTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +39,8 @@ fun SellerDashboardScreen(
     sellerViewModel: SellerViewModel,
     earningsViewModel: EarningsViewModel = viewModel(),
     onNavigateToOrders: () -> Unit,
+    onNavigateToProducts: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     onNavigateToAddProduct: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -45,16 +50,13 @@ fun SellerDashboardScreen(
     val earningsSummary by earningsViewModel.earningsSummary.collectAsState()
 
     val pendingOrdersCount = orders.count {
-        it.orderStatus in listOf("PENDING", "WAITING_CONFIRMATION", "ACCEPTED", "PREPARING", "PACKED")
+        it.orderStatus in listOf("PENDING", "WAITING_CONFIRMATION", "ACCEPTED", "PREPARING", "READY_FOR_PICKUP")
     }
 
     // Edit Product Dialog state
     var editProduct    by remember { mutableStateOf<Product?>(null) }
 
     if (editProduct != null) {
-        // Keeping edit dialog for now as user only asked to replace "Add Product"
-        // But in a real app, Edit should also probably be a full screen.
-        // For now, I'll keep the legacy dialog for Edit to stay within scope of request.
         AddEditProductDialog(
             existingProduct = editProduct,
             onDismiss       = { editProduct = null },
@@ -75,8 +77,8 @@ fun SellerDashboardScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onLogout) {
-                        Icon(Icons.Outlined.PersonOutline, contentDescription = "Logout", tint = PrimaryGreenDark)
+                    IconButton(onClick = onNavigateToProfile) {
+                        Icon(Icons.Outlined.PersonOutline, contentDescription = "Profile", tint = PrimaryGreenDark)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
@@ -112,70 +114,30 @@ fun SellerDashboardScreen(
                 }
             }
 
-            // ── Earnings Breakdown ────────────────────────────────────────────────
-            item {
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = SurfaceLight), elevation = CardDefaults.cardElevation(2.dp)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Earnings Breakdown", fontWeight = FontWeight.Bold, color = PrimaryGreenDark)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Total Sales Volume", color = TextSecondary)
-                            Text("₹${earningsSummary.totalSales.toInt()}", fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Platform Commission (5%)", color = DiscountRed)
-                            Text("-₹${earningsSummary.totalCommissionDeducted.toInt()}", fontWeight = FontWeight.Bold, color = DiscountRed)
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        HorizontalDivider()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Net Earnings", color = PrimaryGreenDark, fontWeight = FontWeight.Bold)
-                            Text("₹${earningsSummary.totalRevenue.toInt()}", fontWeight = FontWeight.ExtraBold, color = PrimaryGreenDark)
-                        }
-                    }
-                }
-            }
-
             // ── Manage Orders Button ──────────────────────────────────────────────
             item {
                 Button(
                     onClick = onNavigateToOrders,
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape    = RoundedCornerShape(12.dp),
-                    colors   = ButtonDefaults.buttonColors(containerColor = BannerDark)
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape    = RoundedCornerShape(16.dp),
+                    colors   = ButtonDefaults.buttonColors(containerColor = PrimaryGreenDark)
                 ) {
-                    Icon(Icons.Default.ListAlt, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Manage Orders", fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.ListAlt, contentDescription = null, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text("Manage Real-time Orders", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
 
-            // ── Inquiries ─────────────────────────────────────────────────────────
-            if (sellerInquiries.isNotEmpty()) {
-                item {
-                    Text("Pending Inquiries", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = PrimaryGreenDark)
-                }
-                items(sellerInquiries, key = { it.inquiryId }) { inquiry ->
-                    Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = SecondaryOrange.copy(alpha = 0.1f))) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text("Product: ${inquiry.productName}", fontWeight = FontWeight.Bold)
-                            Text("Status: ${inquiry.responseStatus}", fontSize = 12.sp, color = TextSecondary)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Button(onClick = { sellerViewModel.respondToInquiry(inquiry.inquiryId, "AVAILABLE") }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)) { Text("Available") }
-                                Button(onClick = { sellerViewModel.respondToInquiry(inquiry.inquiryId, "OUT_OF_STOCK") }, modifier = Modifier.weight(1f), colors = ButtonDefaults.buttonColors(containerColor = DiscountRed)) { Text("Out of Stock") }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ── Products List ─────────────────────────────────────────────────────
+            // ── Products List Header ─────────────────────────────────────────────
             item {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("Your Products (${sellerProducts.size})", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = PrimaryGreenDark)
+                    Text("Your Product Catalog", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = PrimaryGreenDark)
+                    TextButton(onClick = { sellerViewModel.refreshProducts() }) {
+                        Text("Refresh", color = PrimaryGreen)
+                    }
+                    TextButton(onClick = onNavigateToProducts) {
+                        Text("View All", color = SecondaryOrange)
+                    }
                 }
             }
 
@@ -191,7 +153,7 @@ fun SellerDashboardScreen(
                     }
                 }
             } else {
-                items(sellerProducts, key = { it.id }) { product ->
+                items(sellerProducts.take(10), key = { it.id }) { product ->
                     SellerProductCard(
                         product  = product,
                         onEdit   = { editProduct = product },
@@ -206,91 +168,7 @@ fun SellerDashboardScreen(
     }
 }
 
-// ─── Add / Edit Product Dialog ────────────────────────────────────────────────
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddEditProductDialog(
-    existingProduct: Product?,
-    onDismiss: () -> Unit,
-    onSave: (name: String, price: Double, stock: Int, category: String, imageUrl: String, unit: String) -> Unit
-) {
-    var name      by remember { mutableStateOf(existingProduct?.name ?: "") }
-    var price     by remember { mutableStateOf(existingProduct?.price?.toString() ?: "") }
-    var stock     by remember { mutableStateOf(existingProduct?.stock?.toString() ?: "") }
-    var category  by remember { mutableStateOf(existingProduct?.category ?: "Vegetables") }
-    var imageUrl  by remember { mutableStateOf(existingProduct?.imageUrl ?: "") }
-    var unit      by remember { mutableStateOf(existingProduct?.unit ?: "kg") }
-
-    val categories = listOf("Vegetables", "Fruits", "Groceries", "Organic", "Pickles", "Snacks", "Handicrafts")
-    var catExpanded by remember { mutableStateOf(false) }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = SurfaceLight)) {
-            Column(modifier = Modifier.padding(20.dp).fillMaxWidth()) {
-                Text(
-                    if (existingProduct == null) "Add New Product" else "Edit Product",
-                    fontWeight = FontWeight.Bold,
-                    fontSize   = 18.sp,
-                    color      = PrimaryGreenDark
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(value = name,     onValueChange = { name = it },     label = { Text("Product Name") },    modifier = Modifier.fillMaxWidth(), singleLine = true)
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = price,    onValueChange = { price = it },    label = { Text("Price (₹)") },       modifier = Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = stock,    onValueChange = { stock = it },    label = { Text("Stock Quantity") },  modifier = Modifier.fillMaxWidth(), singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = unit,     onValueChange = { unit = it },     label = { Text("Unit (kg/pc/jar)") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(value = imageUrl, onValueChange = { imageUrl = it }, label = { Text("Image URL (optional)") }, modifier = Modifier.fillMaxWidth(), singleLine = true)
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Category dropdown
-                ExposedDropdownMenuBox(expanded = catExpanded, onExpandedChange = { catExpanded = !catExpanded }) {
-                    OutlinedTextField(
-                        value           = category,
-                        onValueChange   = {},
-                        readOnly        = true,
-                        label           = { Text("Category") },
-                        trailingIcon    = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = catExpanded) },
-                        modifier        = Modifier.fillMaxWidth().menuAnchor()
-                    )
-                    ExposedDropdownMenu(expanded = catExpanded, onDismissRequest = { catExpanded = false }) {
-                        categories.forEach { cat ->
-                            DropdownMenuItem(text = { Text(cat) }, onClick = { category = cat; catExpanded = false })
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
-                        Text("Cancel")
-                    }
-                    Button(
-                        onClick = {
-                            val p = price.toDoubleOrNull() ?: 0.0
-                            val s = stock.toIntOrNull() ?: 0
-                            if (name.isNotBlank() && p > 0) {
-                                onSave(name.trim(), p, s, category, imageUrl.trim(), unit.trim().ifBlank { "kg" })
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                        colors   = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
-                    ) {
-                        Text(if (existingProduct == null) "Add" else "Save", fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        }
-    }
-}
-
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-
+// Re-using the StatCard and SellerProductCard from previous implementations or local definitions
 @Composable
 fun StatCard(
     modifier: Modifier = Modifier,
@@ -302,16 +180,14 @@ fun StatCard(
     Card(modifier = modifier.height(120.dp), shape = RoundedCornerShape(16.dp), elevation = CardDefaults.cardElevation(4.dp)) {
         Box(modifier = Modifier.fillMaxSize().background(Brush.linearGradient(gradient)).padding(16.dp)) {
             Column {
-                Icon(icon, contentDescription = null, tint = SurfaceLight, modifier = Modifier.size(28.dp))
+                Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
                 Spacer(modifier = Modifier.weight(1f))
-                Text(value, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = SurfaceLight)
-                Text(title, fontSize = 12.sp, color = SurfaceLight.copy(alpha = 0.8f))
+                Text(value, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                Text(title, fontSize = 12.sp, color = Color.White.copy(alpha = 0.8f))
             }
         }
     }
 }
-
-// ─── Seller Product Card ──────────────────────────────────────────────────────
 
 @Composable
 fun SellerProductCard(
@@ -328,12 +204,11 @@ fun SellerProductCard(
             onDismissRequest = { showStockDialog = false },
             title            = { Text("Update Stock", fontWeight = FontWeight.Bold) },
             text             = {
-                OutlinedTextField(
+                AppTextField(
                     value         = stockInput,
                     onValueChange = { stockInput = it },
-                    label         = { Text("New stock quantity") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine    = true
+                    label         = "New stock quantity",
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             },
             confirmButton    = {
@@ -363,15 +238,6 @@ fun SellerProductCard(
                 Text("Category: ${product.category}", fontSize = 12.sp, color = TextSecondary)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Stock: ${product.stock} ${product.unit}", fontSize = 12.sp, color = if (product.stock < 5) DiscountRed else PrimaryGreen, fontWeight = FontWeight.Medium)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(if (product.stock > 0) PrimaryGreen.copy(alpha = 0.1f) else DiscountRed.copy(alpha = 0.1f))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(if (product.stock > 0) "IN STOCK" else "OUT", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = if (product.stock > 0) PrimaryGreen else DiscountRed)
-                    }
                 }
                 Text("₹${product.price.toInt()} / ${product.unit}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = DiscountRed)
             }
@@ -384,6 +250,84 @@ fun SellerProductCard(
                 }
                 IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
                     Icon(Icons.Default.DeleteOutline, contentDescription = "Delete", tint = DiscountRed, modifier = Modifier.size(18.dp))
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddEditProductDialog(
+    existingProduct: Product?,
+    onDismiss: () -> Unit,
+    onSave: (name: String, price: Double, stock: Int, category: String, imageUrl: String, unit: String) -> Unit
+) {
+    var name      by remember { mutableStateOf(existingProduct?.name ?: "") }
+    var price     by remember { mutableStateOf(existingProduct?.price?.toString() ?: "") }
+    var stock     by remember { mutableStateOf(existingProduct?.stock?.toString() ?: "") }
+    var category  by remember { mutableStateOf(existingProduct?.category ?: "Vegetables") }
+    var imageUrl  by remember { mutableStateOf(existingProduct?.imageUrl ?: "") }
+    var unit      by remember { mutableStateOf(existingProduct?.unit ?: "kg") }
+
+    val categories = listOf("Vegetables", "Fruits", "Groceries", "Organic", "Pickles", "Snacks", "Handicrafts")
+    var catExpanded by remember { mutableStateOf(false) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = SurfaceLight)) {
+            Column(modifier = Modifier.padding(20.dp).fillMaxWidth().verticalScroll(rememberScrollState())) {
+                Text(
+                    if (existingProduct == null) "Add New Product" else "Edit Product",
+                    fontWeight = FontWeight.Bold,
+                    fontSize   = 18.sp,
+                    color      = PrimaryGreenDark
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                AppTextField(value = name,     onValueChange = { name = it },     label = "Product Name",    modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(8.dp))
+                AppTextField(value = price,    onValueChange = { price = it },    label = "Price (₹)",       modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                Spacer(modifier = Modifier.height(8.dp))
+                AppTextField(value = stock,    onValueChange = { stock = it },    label = "Stock Quantity",  modifier = Modifier.fillMaxWidth(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
+                Spacer(modifier = Modifier.height(8.dp))
+                AppTextField(value = unit,     onValueChange = { unit = it },     label = "Unit (kg/pc/jar)", modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(8.dp))
+                AppTextField(value = imageUrl, onValueChange = { imageUrl = it }, label = "Image URL", modifier = Modifier.fillMaxWidth())
+                Spacer(modifier = Modifier.height(8.dp))
+
+                ExposedDropdownMenuBox(expanded = catExpanded, onExpandedChange = { catExpanded = !catExpanded }) {
+                    AppTextField(
+                        value           = category,
+                        onValueChange   = {},
+                        readOnly        = true,
+                        label           = "Category",
+                        trailingIcon    = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = catExpanded) },
+                        modifier        = Modifier.fillMaxWidth().menuAnchor()
+                    )
+                    ExposedDropdownMenu(expanded = catExpanded, onDismissRequest = { catExpanded = false }) {
+                        categories.forEach { cat ->
+                            DropdownMenuItem(text = { Text(cat) }, onClick = { category = cat; catExpanded = false })
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = onDismiss, modifier = Modifier.weight(1f)) { Text("Cancel") }
+                    Button(
+                        onClick = {
+                            val p = price.toDoubleOrNull() ?: 0.0
+                            val s = stock.toIntOrNull() ?: 0
+                            if (name.isNotBlank() && p > 0) {
+                                onSave(name.trim(), p, s, category, imageUrl.trim(), unit.trim().ifBlank { "kg" })
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        colors   = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
+                    ) {
+                        Text(if (existingProduct == null) "Add" else "Save", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

@@ -4,6 +4,23 @@
             "outputFile": "com.hallisanthe.app-mergeDebugResources-77:/values-hr/values-hr.xml",
             "map": [
                 {
+                    "source": "C:\\Gradle\\caches\\transforms-3\\ed9a4e010c3f5c5560983b296dde24f6\\transformed\\play-services-basement-18.4.0\\res\\values-hr\\values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "127",
+                        "endOffsets": "322"
+                    },
+                    "to": {
+                        "startLines": "61",
+                        "startColumns": "4",
+                        "startOffsets": "5985",
+                        "endColumns": "131",
+                        "endOffsets": "6112"
+                    }
+                },
+                {
                     "source": "C:\\Gradle\\caches\\transforms-3\\b1297bece2f38fdb513c1a6f1a83ec7a\\transformed\\credentials-1.2.0-rc01\\res\\values-hr\\values-hr.xml",
                     "from": {
                         "startLines": "2,3",
@@ -18,23 +35,6 @@
                         "startOffsets": "3081,3192",
                         "endColumns": "110,121",
                         "endOffsets": "3187,3309"
-                    }
-                },
-                {
-                    "source": "C:\\Gradle\\caches\\transforms-3\\8798392146d602676e10c8583e1d4781\\transformed\\play-services-basement-18.3.0\\res\\values-hr\\values.xml",
-                    "from": {
-                        "startLines": "4",
-                        "startColumns": "0",
-                        "startOffsets": "195",
-                        "endColumns": "127",
-                        "endOffsets": "322"
-                    },
-                    "to": {
-                        "startLines": "61",
-                        "startColumns": "4",
-                        "startOffsets": "5985",
-                        "endColumns": "131",
-                        "endOffsets": "6112"
                     }
                 },
                 {
@@ -142,6 +142,23 @@
                     }
                 },
                 {
+                    "source": "C:\\Gradle\\caches\\transforms-3\\7d2140e77edc294af152492e5e265302\\transformed\\play-services-base-18.5.0\\res\\values-hr\\values.xml",
+                    "from": {
+                        "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+                        "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+                        "startOffsets": "193,295,448,574,680,833,959,1070,1173,1319,1422,1575,1699,1842,1981,2045,2103",
+                        "endColumns": "101,152,125,105,152,125,110,102,145,102,152,123,142,138,63,57,76",
+                        "endOffsets": "294,447,573,679,832,958,1069,1172,1318,1421,1574,1698,1841,1980,2044,2102,2179"
+                    },
+                    "to": {
+                        "startLines": "53,54,55,56,57,58,59,60,62,63,64,65,66,67,68,69,70",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "4973,5079,5236,5366,5476,5633,5763,5878,6117,6267,6374,6531,6659,6806,6949,7017,7079",
+                        "endColumns": "105,156,129,109,156,129,114,106,149,106,156,127,146,142,67,61,80",
+                        "endOffsets": "5074,5231,5361,5471,5628,5758,5873,5980,6262,6369,6526,6654,6801,6944,7012,7074,7155"
+                    }
+                },
+                {
                     "source": "C:\\Gradle\\caches\\transforms-3\\28331a32647107d7439b11c58664ab8e\\transformed\\foundation-release\\res\\values-hr\\values-hr.xml",
                     "from": {
                         "startLines": "2,3",
@@ -156,23 +173,6 @@
                         "startOffsets": "20617,20700",
                         "endColumns": "82,84",
                         "endOffsets": "20695,20780"
-                    }
-                },
-                {
-                    "source": "C:\\Gradle\\caches\\transforms-3\\1d086b68e500ccf72439bda725c00e36\\transformed\\play-services-base-18.3.0\\res\\values-hr\\values.xml",
-                    "from": {
-                        "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
-                        "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-                        "startOffsets": "193,295,448,574,680,833,959,1070,1173,1319,1422,1575,1699,1842,1981,2045,2103",
-                        "endColumns": "101,152,125,105,152,125,110,102,145,102,152,123,142,138,63,57,76",
-                        "endOffsets": "294,447,573,679,832,958,1069,1172,1318,1421,1574,1698,1841,1980,2044,2102,2179"
-                    },
-                    "to": {
-                        "startLines": "53,54,55,56,57,58,59,60,62,63,64,65,66,67,68,69,70",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "4973,5079,5236,5366,5476,5633,5763,5878,6117,6267,6374,6531,6659,6806,6949,7017,7079",
-                        "endColumns": "105,156,129,109,156,129,114,106,149,106,156,127,146,142,67,61,80",
-                        "endOffsets": "5074,5231,5361,5471,5628,5758,5873,5980,6262,6369,6526,6654,6801,6944,7012,7074,7155"
                     }
                 }
             ]

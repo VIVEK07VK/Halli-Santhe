@@ -1,26 +1,33 @@
 package com.hallisanthe.app.navigation
 
+import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.hallisanthe.app.ui.screens.*
-import com.hallisanthe.app.viewmodel.AuthViewModel
-import com.hallisanthe.app.viewmodel.ProfileViewModel
-import com.hallisanthe.app.viewmodel.SellerViewModel
+import com.hallisanthe.app.viewmodel.*
 
 fun NavGraphBuilder.sellerGraph(
     navController: NavController,
     authViewModel: AuthViewModel,
-    sellerViewModel: SellerViewModel,
+    ordersViewModel: OrdersViewModel,
     profileViewModel: ProfileViewModel
 ) {
     navigation(startDestination = Routes.SELLER_DASHBOARD, route = "seller_graph") {
         
-        composable(Routes.SELLER_DASHBOARD) {
+        composable(Routes.SELLER_DASHBOARD) { backStack ->
+            val sellerBackStackEntry = remember(backStack) {
+                navController.getBackStackEntry("seller_graph")
+            }
+            val sellerViewModel: SellerViewModel = viewModel(sellerBackStackEntry)
+
             SellerDashboardScreen(
                 sellerViewModel    = sellerViewModel,
                 onNavigateToOrders = { navController.navigate(Routes.SELLER_ORDERS) },
+                onNavigateToProducts = { navController.navigate(Routes.SELLER_PRODUCTS) },
+                onNavigateToProfile = { navController.navigate(Routes.SELLER_PROFILE) },
                 onNavigateToAddProduct = { navController.navigate(Routes.SELLER_ADD_PRODUCT) },
                 onLogout = {
                     authViewModel.logout()
@@ -32,9 +39,10 @@ fun NavGraphBuilder.sellerGraph(
         }
 
         composable(Routes.SELLER_ORDERS) {
-            SellerOrdersScreen(
-                sellerViewModel = sellerViewModel,
-                onBack = { navController.popBackStack() }
+            ManageOrdersScreen(
+                onBack = { navController.popBackStack() },
+                ordersViewModel = ordersViewModel,
+                authViewModel = authViewModel
             )
         }
 
@@ -48,13 +56,8 @@ fun NavGraphBuilder.sellerGraph(
         composable(Routes.SELLER_PROFILE) {
             SellerProfileScreen(
                 authViewModel    = authViewModel,
-                profileViewModel = profileViewModel,
-                onEditProfile    = { navController.navigate(Routes.EDIT_PROFILE) },
-                onMyOrders       = { navController.navigate(Routes.SELLER_ORDERS) },
-                onSavedAddresses = { navController.navigate(Routes.SAVED_ADDRESSES) },
-                onRecentlyViewed = { navController.navigate(Routes.RECENTLY_VIEWED) },
-                onHelpSupport    = { navController.navigate(Routes.HELP_SUPPORT) },
-                onAbout          = { navController.navigate(Routes.ABOUT) },
+                onBack           = { navController.popBackStack() },
+                onNavigate       = { route -> navController.navigate(route) },
                 onLogout         = {
                     authViewModel.logout()
                     navController.navigate(Routes.ROLE_SELECTION) { popUpTo(0) { inclusive = true } }
@@ -63,9 +66,27 @@ fun NavGraphBuilder.sellerGraph(
         }
 
         composable(Routes.EDIT_PROFILE) {
-            EditProfileScreen(
-                profileViewModel = profileViewModel,
+            EditSellerProfileScreen(
                 onBack           = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.SELLER_PRODUCTS) { backStack ->
+            val sellerBackStackEntry = remember(backStack) {
+                navController.getBackStackEntry("seller_graph")
+            }
+            val sellerViewModel: SellerViewModel = viewModel(sellerBackStackEntry)
+
+            ManageProductsScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToAddProduct = { navController.navigate(Routes.SELLER_ADD_PRODUCT) },
+                sellerViewModel = sellerViewModel
+            )
+        }
+
+        composable(Routes.SELLER_EARNINGS) {
+            EarningsHistoryScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }

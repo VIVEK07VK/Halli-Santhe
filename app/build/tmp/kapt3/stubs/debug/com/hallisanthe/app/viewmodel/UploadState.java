@@ -1,6 +1,6 @@
 package com.hallisanthe.app.viewmodel;
 
-@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\u001e\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0005\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b6\u0018\u00002\u00020\u0001:\u0004\u0003\u0004\u0005\u0006B\u0007\b\u0004\u00a2\u0006\u0002\u0010\u0002\u0082\u0001\u0004\u0007\b\t\n\u00a8\u0006\u000b"}, d2 = {"Lcom/hallisanthe/app/viewmodel/UploadState;", "", "()V", "Error", "Idle", "Loading", "Success", "Lcom/hallisanthe/app/viewmodel/UploadState$Error;", "Lcom/hallisanthe/app/viewmodel/UploadState$Idle;", "Lcom/hallisanthe/app/viewmodel/UploadState$Loading;", "Lcom/hallisanthe/app/viewmodel/UploadState$Success;", "app_debug"})
+@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\"\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0006\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b6\u0018\u00002\u00020\u0001:\u0005\u0003\u0004\u0005\u0006\u0007B\u0007\b\u0004\u00a2\u0006\u0002\u0010\u0002\u0082\u0001\u0005\b\t\n\u000b\f\u00a8\u0006\r"}, d2 = {"Lcom/hallisanthe/app/viewmodel/UploadState;", "", "()V", "Error", "Idle", "ProcessingImage", "SavingProduct", "Success", "Lcom/hallisanthe/app/viewmodel/UploadState$Error;", "Lcom/hallisanthe/app/viewmodel/UploadState$Idle;", "Lcom/hallisanthe/app/viewmodel/UploadState$ProcessingImage;", "Lcom/hallisanthe/app/viewmodel/UploadState$SavingProduct;", "Lcom/hallisanthe/app/viewmodel/UploadState$Success;", "app_debug"})
 public abstract class UploadState {
     
     private UploadState() {
@@ -59,12 +59,21 @@ public abstract class UploadState {
         }
     }
     
-    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\f\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0002\b\u00c6\u0002\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002\u00a8\u0006\u0003"}, d2 = {"Lcom/hallisanthe/app/viewmodel/UploadState$Loading;", "Lcom/hallisanthe/app/viewmodel/UploadState;", "()V", "app_debug"})
-    public static final class Loading extends com.hallisanthe.app.viewmodel.UploadState {
+    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\f\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0002\b\u00c6\u0002\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002\u00a8\u0006\u0003"}, d2 = {"Lcom/hallisanthe/app/viewmodel/UploadState$ProcessingImage;", "Lcom/hallisanthe/app/viewmodel/UploadState;", "()V", "app_debug"})
+    public static final class ProcessingImage extends com.hallisanthe.app.viewmodel.UploadState {
         @org.jetbrains.annotations.NotNull()
-        public static final com.hallisanthe.app.viewmodel.UploadState.Loading INSTANCE = null;
+        public static final com.hallisanthe.app.viewmodel.UploadState.ProcessingImage INSTANCE = null;
         
-        private Loading() {
+        private ProcessingImage() {
+        }
+    }
+    
+    @kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000\f\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0002\b\u0002\b\u00c6\u0002\u0018\u00002\u00020\u0001B\u0007\b\u0002\u00a2\u0006\u0002\u0010\u0002\u00a8\u0006\u0003"}, d2 = {"Lcom/hallisanthe/app/viewmodel/UploadState$SavingProduct;", "Lcom/hallisanthe/app/viewmodel/UploadState;", "()V", "app_debug"})
+    public static final class SavingProduct extends com.hallisanthe.app.viewmodel.UploadState {
+        @org.jetbrains.annotations.NotNull()
+        public static final com.hallisanthe.app.viewmodel.UploadState.SavingProduct INSTANCE = null;
+        
+        private SavingProduct() {
         }
     }
     

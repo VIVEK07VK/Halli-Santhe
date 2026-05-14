@@ -1,15 +1,19 @@
 package com.hallisanthe.app.ui.screens
 
+import android.Manifest
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,8 +30,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.hallisanthe.app.ui.theme.*
 import com.hallisanthe.app.viewmodel.ProductUploadViewModel
+import com.hallisanthe.app.ui.components.AppTextField
 import com.hallisanthe.app.viewmodel.UploadState
 
+/**
+ * AddProductScreen: Professional product creation with robust image upload.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProductScreen(
@@ -44,9 +52,11 @@ fun AddProductScreen(
     var stock by remember { mutableStateOf("") }
     var unit by remember { mutableStateOf("kg") }
     var category by remember { mutableStateOf("Vegetables") }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    
+    // Use rememberSaveable for Uri to persist during process death
+    var imageUri by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf<Uri?>(null) }
 
-    val units = listOf("kg", "pc", "jar", "packet", "litre")
+    val units = listOf("kg", "pc", "jar", "packet", "litre", "gm")
     val categories = listOf(
         "Vegetables", "Fruits", "Handicrafts", "Pickles", 
         "Snacks", "Traditional Foods", "Organic Products", "Village Specials"
@@ -55,16 +65,30 @@ fun AddProductScreen(
     var unitExpanded by remember { mutableStateOf(false) }
     var catExpanded by remember { mutableStateOf(false) }
 
-    val imagePicker = rememberLauncherForActivityResult(
+    // --- Image Picker Logic ---
+    val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        imageUri = uri
+    ) { uri ->
+        if (uri != null) {
+            imageUri = uri
+        }
+    }
+
+    // --- Permission Handling ---
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            photoPickerLauncher.launch("image/*")
+        } else {
+            Toast.makeText(context, "Permission denied. Cannot pick image.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     LaunchedEffect(uploadState) {
         when (uploadState) {
             is UploadState.Success -> {
-                Toast.makeText(context, "Product added successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Product published successfully!", Toast.LENGTH_LONG).show()
                 onSuccess()
                 viewModel.resetState()
             }
@@ -79,13 +103,13 @@ fun AddProductScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add New Product", fontWeight = FontWeight.Bold) },
+                title = { Text("Add New Product", fontWeight = FontWeight.Bold, color = PrimaryGreenDark) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = PrimaryGreenDark)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundLight)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
             )
         },
         containerColor = BackgroundLight
@@ -95,147 +119,149 @@ fun AddProductScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ── Image Upload Section ──────────────────────────────
+            // ── Image Selection Card ──────────────────────────────
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .clickable { imagePicker.launch("image/*") },
-                shape = RoundedCornerShape(16.dp),
+                    .height(220.dp)
+                    .clickable { 
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            permissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
+                        } else {
+                            permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                        }
+                    },
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(2.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     if (imageUri != null) {
                         AsyncImage(
                             model = imageUri,
                             contentDescription = "Preview",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
+                            modifier = Modifier.fillMaxSize().padding(8.dp),
+                            contentScale = ContentScale.Fit
                         )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.BottomEnd
+                        Surface(
+                            modifier = Modifier.align(Alignment.TopEnd).padding(12.dp),
+                            shape = CircleShape,
+                            color = Color.Black.copy(alpha = 0.5f)
                         ) {
-                            Icon(
-                                Icons.Default.Edit,
-                                contentDescription = "Change",
-                                tint = Color.White,
-                                modifier = Modifier.padding(12.dp)
-                            )
+                            IconButton(onClick = { imageUri = null }, modifier = Modifier.size(32.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Remove", tint = Color.White, modifier = Modifier.size(16.dp))
+                            }
                         }
                     } else {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
                                 Icons.Default.AddPhotoAlternate,
                                 contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = PrimaryGreen
+                                modifier = Modifier.size(56.dp),
+                                tint = PrimaryGreen.copy(alpha = 0.3f)
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("Tap to upload product image", color = TextSecondary, fontSize = 14.sp)
-                            Text("(JPG, PNG, JPEG supported)", color = TextSecondary.copy(alpha = 0.6f), fontSize = 11.sp)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text("Select Product Image", fontWeight = FontWeight.Bold, color = PrimaryGreenDark)
+                            Text("Supports JPG, PNG, WEBP", color = TextSecondary, fontSize = 12.sp)
                         }
                     }
                 }
             }
 
-            // ── Form Fields ───────────────────────────────────────
-            OutlinedTextField(
+            // ── Form Section ──────────────────────────────────────
+            Text("Product Details", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = PrimaryGreenDark)
+
+            AppTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Product Name") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                label = "Product Name",
+                placeholder = "e.g. Village Honey Jar",
+                modifier = Modifier.fillMaxWidth()
             )
 
-            OutlinedTextField(
+            AppTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Product Description") },
-                modifier = Modifier.fillMaxWidth().height(100.dp),
-                shape = RoundedCornerShape(12.dp),
-                maxLines = 3
+                label = "Description",
+                placeholder = "Authentic description of your product...",
+                modifier = Modifier.fillMaxWidth().height(120.dp),
+                singleLine = false
             )
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AppTextField(
                     value = price,
-                    onValueChange = { price = it },
-                    label = { Text("Price (₹)") },
+                    onValueChange = { if (it.all { char -> char.isDigit() || char == '.' }) price = it },
+                    label = "Price (₹)",
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                 )
 
-                OutlinedTextField(
+                AppTextField(
                     value = stock,
-                    onValueChange = { stock = it },
-                    label = { Text("Stock Qty") },
+                    onValueChange = { if (it.all { char -> char.isDigit() }) stock = it },
+                    label = "Stock",
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             }
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 // Unit Dropdown
-                ExposedDropdownMenuBox(
-                    expanded = unitExpanded,
-                    onExpandedChange = { unitExpanded = !unitExpanded },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    OutlinedTextField(
-                        value = unit,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Unit") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
-                        modifier = Modifier.menuAnchor(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    ExposedDropdownMenu(expanded = unitExpanded, onDismissRequest = { unitExpanded = false }) {
-                        units.forEach { selection ->
-                            DropdownMenuItem(
-                                text = { Text(selection) },
-                                onClick = {
-                                    unit = selection
-                                    unitExpanded = false
-                                }
-                            )
+                Box(modifier = Modifier.weight(1f)) {
+                    ExposedDropdownMenuBox(
+                        expanded = unitExpanded,
+                        onExpandedChange = { unitExpanded = !unitExpanded }
+                    ) {
+                        AppTextField(
+                            value = unit,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = "Unit",
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = unitExpanded) },
+                            modifier = Modifier.menuAnchor()
+                        )
+                        ExposedDropdownMenu(expanded = unitExpanded, onDismissRequest = { unitExpanded = false }) {
+                            units.forEach { selection ->
+                                DropdownMenuItem(
+                                    text = { Text(selection) },
+                                    onClick = {
+                                        unit = selection
+                                        unitExpanded = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
 
                 // Category Dropdown
-                ExposedDropdownMenuBox(
-                    expanded = catExpanded,
-                    onExpandedChange = { catExpanded = !catExpanded },
-                    modifier = Modifier.weight(1.5f)
-                ) {
-                    OutlinedTextField(
-                        value = category,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Category") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = catExpanded) },
-                        modifier = Modifier.menuAnchor(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    ExposedDropdownMenu(expanded = catExpanded, onDismissRequest = { catExpanded = false }) {
-                        categories.forEach { selection ->
-                            DropdownMenuItem(
-                                text = { Text(selection) },
-                                onClick = {
-                                    category = selection
-                                    catExpanded = false
-                                }
-                            )
+                Box(modifier = Modifier.weight(1.5f)) {
+                    ExposedDropdownMenuBox(
+                        expanded = catExpanded,
+                        onExpandedChange = { catExpanded = !catExpanded }
+                    ) {
+                        AppTextField(
+                            value = category,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = "Category",
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = catExpanded) },
+                            modifier = Modifier.menuAnchor()
+                        )
+                        ExposedDropdownMenu(expanded = catExpanded, onDismissRequest = { catExpanded = false }) {
+                            categories.forEach { selection ->
+                                DropdownMenuItem(
+                                    text = { Text(selection) },
+                                    onClick = {
+                                        category = selection
+                                        catExpanded = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -243,32 +269,51 @@ fun AddProductScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ── Action Buttons ────────────────────────────────────
+            // ── Upload Progress UI ────────────────────────────────
+            if (uploadState is UploadState.ProcessingImage || uploadState is UploadState.SavingProduct) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = PrimaryGreen.copy(alpha = 0.05f)),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = PrimaryGreen)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = if (uploadState is UploadState.ProcessingImage) "Uploading image..." else "Saving product data...",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = PrimaryGreenDark
+                        )
+                    }
+                }
+            }
+
+            // ── Publish Button ────────────────────────────────────
             Button(
                 onClick = {
                     viewModel.uploadProduct(name, description, price, stock, category, unit, imageUri)
                 },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                enabled = uploadState !is UploadState.Loading
+                modifier = Modifier.fillMaxWidth().height(60.dp),
+                shape = RoundedCornerShape(18.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreenDark),
+                enabled = uploadState == UploadState.Idle
             ) {
-                if (uploadState is UploadState.Loading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Text("Add Product", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                }
+                Text("PUBLISH PRODUCT", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
 
-            OutlinedButton(
+            TextButton(
                 onClick = onBack,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
-                border = BorderStroke(1.dp, Color.Red.copy(alpha = 0.5f))
+                modifier = Modifier.fillMaxWidth(),
+                enabled = uploadState == UploadState.Idle
             ) {
-                Text("Cancel", fontWeight = FontWeight.Medium)
+                Text("Discard Draft", color = DiscountRed.copy(alpha = 0.7f))
             }
+            
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

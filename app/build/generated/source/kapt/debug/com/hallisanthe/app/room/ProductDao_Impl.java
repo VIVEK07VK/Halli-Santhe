@@ -39,7 +39,7 @@ public final class ProductDao_Impl implements ProductDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `products` (`id`,`name`,`description`,`price`,`stock`,`category`,`sellerName`,`sellerId`,`imageUrl`,`unit`,`rating`,`discountPercent`,`tag`,`isFavorite`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `products` (`id`,`name`,`description`,`price`,`stock`,`category`,`sellerName`,`sellerId`,`imageUrl`,`unit`,`rating`,`discountPercent`,`tag`,`isFavorite`,`deliveryTime`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -100,6 +100,11 @@ public final class ProductDao_Impl implements ProductDao {
         }
         final int _tmp = entity.isFavorite() ? 1 : 0;
         statement.bindLong(14, _tmp);
+        if (entity.getDeliveryTime() == null) {
+          statement.bindNull(15);
+        } else {
+          statement.bindString(15, entity.getDeliveryTime());
+        }
       }
     };
   }
@@ -147,6 +152,7 @@ public final class ProductDao_Impl implements ProductDao {
           final int _cursorIndexOfDiscountPercent = CursorUtil.getColumnIndexOrThrow(_cursor, "discountPercent");
           final int _cursorIndexOfTag = CursorUtil.getColumnIndexOrThrow(_cursor, "tag");
           final int _cursorIndexOfIsFavorite = CursorUtil.getColumnIndexOrThrow(_cursor, "isFavorite");
+          final int _cursorIndexOfDeliveryTime = CursorUtil.getColumnIndexOrThrow(_cursor, "deliveryTime");
           final List<Product> _result = new ArrayList<Product>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final Product _item;
@@ -220,7 +226,13 @@ public final class ProductDao_Impl implements ProductDao {
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsFavorite);
             _tmpIsFavorite = _tmp != 0;
-            _item = new Product(_tmpId,_tmpName,_tmpDescription,_tmpPrice,_tmpStock,_tmpCategory,_tmpSellerName,_tmpSellerId,_tmpImageUrl,_tmpUnit,_tmpRating,_tmpDiscountPercent,_tmpTag,_tmpIsFavorite);
+            final String _tmpDeliveryTime;
+            if (_cursor.isNull(_cursorIndexOfDeliveryTime)) {
+              _tmpDeliveryTime = null;
+            } else {
+              _tmpDeliveryTime = _cursor.getString(_cursorIndexOfDeliveryTime);
+            }
+            _item = new Product(_tmpId,_tmpName,_tmpDescription,_tmpPrice,_tmpStock,_tmpCategory,_tmpSellerName,_tmpSellerId,_tmpImageUrl,_tmpUnit,_tmpRating,_tmpDiscountPercent,_tmpTag,_tmpIsFavorite,_tmpDeliveryTime);
             _result.add(_item);
           }
           return _result;

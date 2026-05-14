@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,7 +37,6 @@ fun RegisterScreen(
 ) {
     val uiState by authViewModel.uiState.collectAsState()
 
-    // Form state
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -46,26 +46,29 @@ fun RegisterScreen(
     var confirmVisible by remember { mutableStateOf(false) }
     var shopName by remember { mutableStateOf("") }
     var villageName by remember { mutableStateOf("") }
-
-    // Selected role (user can switch)
     var selectedRole by remember { mutableStateOf(role) }
 
-    // Derived state
     val isLoading = uiState is AuthUiState.Loading
 
-    // Navigate on success — only fires once per real Success event
+
+    var isNavigating by remember { mutableStateOf(false) }
+
     LaunchedEffect(uiState) {
-        if (uiState is AuthUiState.Success) {
+        if (uiState is AuthUiState.Success && !isNavigating) {
+            isNavigating = true
             val state = uiState as AuthUiState.Success
-            val userRole = state.user?.role?.let { r ->
+            val userRole = state.user.role.let { r ->
                 UserRole.values().firstOrNull { it.name == r } ?: selectedRole
-            } ?: selectedRole
+            }
+            
+            // Navigate first, then reset state if necessary (or rely on screen disposal)
             onRegisterSuccess(userRole)
-            authViewModel.resetState()
+            
+            // We don't reset state here immediately to avoid flickering 
+            // the UI back to the form before the navigation transition starts.
         }
     }
 
-    // Entrance animation
     var visible by remember { mutableStateOf(false) }
     val alpha by animateFloatAsState(if (visible) 1f else 0f, tween(600), label = "regAlpha")
     LaunchedEffect(Unit) { delay(100); visible = true }
@@ -79,7 +82,6 @@ fun RegisterScreen(
                 )
             )
     ) {
-        // Floating emojis
         FloatingEmoji("🌽", 0.08f, 0.02f, 20)
         FloatingEmoji("🫙", 0.88f, 0.06f, 18)
         FloatingEmoji("🍅", 0.1f, 0.75f, 18)
@@ -90,7 +92,6 @@ fun RegisterScreen(
                 .fillMaxSize()
                 .alpha(alpha)
         ) {
-            // Header
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -107,7 +108,7 @@ fun RegisterScreen(
                         .background(Color.White.copy(alpha = 0.15f))
                         .size(40.dp)
                 ) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                 }
                 Spacer(Modifier.height(20.dp))
 
@@ -131,7 +132,6 @@ fun RegisterScreen(
                 Text("Join the village marketplace community", color = Color.White.copy(0.7f), fontSize = 13.sp)
             }
 
-            // Form card
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -146,41 +146,22 @@ fun RegisterScreen(
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 24.dp, vertical = 28.dp)
                 ) {
-                    // ── Error Banner ──
-                    // Show specific error messages — never the generic fallback
-                    AnimatedVisibility(visible = uiState is AuthUiState.Error) {
-                        val errMsg = (uiState as? AuthUiState.Error)?.message ?: ""
-                        if (errMsg.isNotBlank()) {
-                            Column {
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(
-                                            Icons.Filled.ErrorOutline,
-                                            contentDescription = null,
-                                            tint = Color(0xFFD32F2F),
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(
-                                            text = errMsg,
-                                            color = Color(0xFFD32F2F),
-                                            fontSize = 13.sp
-                                        )
-                                    }
-                                }
-                                Spacer(Modifier.height(16.dp))
+                    if (uiState is AuthUiState.Error) {
+                        val errMsg = (uiState as AuthUiState.Error).message
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+                        ) {
+                            Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = Color(0xFFD32F2F), modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text(errMsg, color = Color(0xFFD32F2F), fontSize = 13.sp)
                             }
                         }
+                        Spacer(Modifier.height(16.dp))
                     }
 
-                    // ── Role Toggle ──
                     Text("Your Role", fontSize = 13.sp, color = Color(0xFF6B7280), fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(8.dp))
                     Row(
@@ -217,124 +198,51 @@ fun RegisterScreen(
 
                     Spacer(Modifier.height(20.dp))
 
-                    // ── Personal fields ──
-                    HalliInputField(
-                        value = fullName,
-                        onValueChange = { fullName = it },
-                        label = "Full Name",
-                        leadingIcon = Icons.Filled.Person
-                    )
+                    HalliInputField(value = fullName, onValueChange = { fullName = it }, label = "Full Name", leadingIcon = Icons.Filled.Person)
                     Spacer(Modifier.height(12.dp))
-
-                    HalliInputField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = "Email Address",
-                        leadingIcon = Icons.Filled.Email,
-                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Email
-                    )
+                    HalliInputField(value = email, onValueChange = { email = it }, label = "Email Address", leadingIcon = Icons.Filled.Email, keyboardType = androidx.compose.ui.text.input.KeyboardType.Email)
                     Spacer(Modifier.height(12.dp))
-
-                    HalliInputField(
-                        value = phone,
-                        onValueChange = { phone = it },
-                        label = "Phone Number",
-                        leadingIcon = Icons.Filled.Phone,
-                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
-                    )
+                    HalliInputField(value = phone, onValueChange = { phone = it }, label = "Phone Number", leadingIcon = Icons.Filled.Phone, keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone)
                     Spacer(Modifier.height(12.dp))
-
-                    HalliInputField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = "Password",
-                        leadingIcon = Icons.Filled.Lock,
-                        isPassword = true,
-                        passwordVisible = passwordVisible,
-                        onPasswordToggle = { passwordVisible = !passwordVisible }
-                    )
+                    HalliInputField(value = password, onValueChange = { password = it }, label = "Password", leadingIcon = Icons.Filled.Lock, isPassword = true, passwordVisible = passwordVisible, onPasswordToggle = { passwordVisible = !passwordVisible })
                     Spacer(Modifier.height(12.dp))
+                    HalliInputField(value = confirmPassword, onValueChange = { confirmPassword = it }, label = "Confirm Password", leadingIcon = Icons.Filled.LockOpen, isPassword = true, passwordVisible = confirmVisible, onPasswordToggle = { confirmVisible = !confirmVisible })
 
-                    HalliInputField(
-                        value = confirmPassword,
-                        onValueChange = { confirmPassword = it },
-                        label = "Confirm Password",
-                        leadingIcon = Icons.Filled.LockOpen,
-                        isPassword = true,
-                        passwordVisible = confirmVisible,
-                        onPasswordToggle = { confirmVisible = !confirmVisible }
-                    )
-
-                    // ── Seller-only fields ──
                     AnimatedVisibility(visible = selectedRole == UserRole.SELLER) {
                         Column {
                             Spacer(Modifier.height(20.dp))
-                            Divider(color = Color(0xFFDDDDDD))
+                            HorizontalDivider(color = Color(0xFFDDDDDD))
                             Spacer(Modifier.height(16.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0xFFE65100).copy(alpha = 0.12f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text("🏪", fontSize = 16.sp)
-                                }
-                                Spacer(Modifier.width(8.dp))
-                                Text("Shop Details", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1B3A2D))
-                            }
+                            HalliInputField(value = shopName, onValueChange = { shopName = it }, label = "Shop / Store Name", leadingIcon = Icons.Filled.Store)
                             Spacer(Modifier.height(12.dp))
-                            HalliInputField(
-                                value = shopName,
-                                onValueChange = { shopName = it },
-                                label = "Shop / Store Name",
-                                leadingIcon = Icons.Filled.Store
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            HalliInputField(
-                                value = villageName,
-                                onValueChange = { villageName = it },
-                                label = "Village / Town Name",
-                                leadingIcon = Icons.Filled.LocationOn
-                            )
+                            HalliInputField(value = villageName, onValueChange = { villageName = it }, label = "Village / Town Name", leadingIcon = Icons.Filled.LocationOn)
                         }
                     }
 
                     Spacer(Modifier.height(28.dp))
 
-                    // ── Create Account Button ──
                     PrimaryAuthButton(
                         text = if (isLoading) "Creating Account…" else "Create Account",
                         onClick = {
                             authViewModel.register(
-                                fullName        = fullName,
-                                email           = email,
-                                phone           = phone,
-                                password        = password,
+                                fullName = fullName,
+                                email = email,
+                                phone = phone,
+                                password = password,
                                 confirmPassword = confirmPassword,
-                                role            = selectedRole,
-                                shopName        = shopName,
-                                villageName     = villageName
+                                role = selectedRole,
+                                shopName = shopName,
+                                villageName = villageName
                             )
                         },
                         isLoading = isLoading
                     )
 
-                    Spacer(Modifier.height(20.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+
+                    Spacer(Modifier.height(28.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                         Text("Already have an account?", color = Color(0xFF6B7280), fontSize = 14.sp)
-                        TextButton(
-                            onClick = {
-                                authViewModel.resetState()
-                                onNavigateToLogin()
-                            },
-                            enabled = !isLoading
-                        ) {
+                        TextButton(onClick = { authViewModel.resetState(); onNavigateToLogin() }, enabled = !isLoading) {
                             Text("Sign In", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                         }
                     }

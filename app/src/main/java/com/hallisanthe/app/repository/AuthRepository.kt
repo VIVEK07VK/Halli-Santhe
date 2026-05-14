@@ -6,6 +6,8 @@ import com.google.firebase.auth.FirebaseUser
 import com.hallisanthe.app.firebase.FirebaseAuthManager
 import com.hallisanthe.app.models.UserModel
 import com.hallisanthe.app.models.UserRole
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class AuthRepository {
 
@@ -19,33 +21,45 @@ class AuthRepository {
     fun isLoggedIn() = authManager.isLoggedIn()
     fun signOut() = authManager.signOut()
 
-    // ─── Login ───────────────────────────────────────────────────────
-
-    suspend fun loginWithEmail(email: String, password: String, expectedRole: UserRole): AuthResult {
-        Log.d(TAG, "loginWithEmail: email=$email expectedRole=${expectedRole.name}")
+    suspend fun loginWithEmail(email: String, password: String, expectedRole: UserRole): AuthResult = withContext(Dispatchers.IO) {
         val result = authManager.signInWithEmail(email, password)
-        return if (result.isSuccess) {
+        if (result.isSuccess) {
             val user = result.getOrNull()!!
-            Log.d(TAG, "loginWithEmail: Firebase auth OK, fetching Firestore profile uid=${user.uid}")
-            val userModel = authManager.getUserFromFirestore(user.uid).getOrNull()
-            Log.d(TAG, "loginWithEmail: Firestore profile fetched role=${userModel?.role}")
             
-            if (userModel != null && !userModel.role.equals(expectedRole.name, ignoreCase = true)) {
-                Log.e(TAG, "loginWithEmail: Role mismatch! Expected ${expectedRole.name}, got ${userModel.role}")
-                authManager.signOut()
-                val actualRole = userModel.role.lowercase().replaceFirstChar { it.uppercase() }
-                return AuthResult.Error("This account is registered as $actualRole")
+            // Try fetching profile with a retry mechanism
+            var userModel: com.hallisanthe.app.models.UserModel? = null
+            var lastError: Throwable? = null
+            
+            repeat(3) { attempt ->
+                val profileResult = authManager.getUserFromFirestore(user.uid)
+                if (profileResult.isSuccess) {
+                    userModel = profileResult.getOrNull()
+                    if (userModel != null) return@repeat // Success!
+                } else {
+                    lastError = profileResult.exceptionOrNull()
+                }
+                if (attempt < 2) kotlinx.coroutines.delay(1000) // Wait before retry
             }
             
-            AuthResult.Success(userModel)
+            if (userModel == null) {
+                if (lastError == null) {
+                    authManager.signOut()
+                    return@withContext AuthResult.Error("Account profile not found. If you just registered, please wait a moment and try again.")
+                } else {
+                    return@withContext AuthResult.Error("Connection error while fetching profile: ${lastError?.localizedMessage}. Please try again.")
+                }
+            }
+
+            if (!userModel!!.role.equals(expectedRole.name, ignoreCase = true)) {
+                authManager.signOut()
+                val actualRole = userModel!!.role.lowercase().replaceFirstChar { it.uppercase() }
+                return@withContext AuthResult.Error("This account is registered as $actualRole. Please use the correct login side.")
+            }
+            AuthResult.Success(userModel!!)
         } else {
-            val error = mapFirebaseError(result.exceptionOrNull())
-            Log.e(TAG, "loginWithEmail: FAILED mapped='$error' raw=${result.exceptionOrNull()?.message}")
-            AuthResult.Error(error)
+            AuthResult.Error(mapFirebaseError(result.exceptionOrNull()))
         }
     }
-
-    // ─── Register ────────────────────────────────────────────────────
 
     suspend fun registerUser(
         fullName: String,
@@ -55,170 +69,92 @@ class AuthRepository {
         role: UserRole,
         shopName: String = "",
         villageName: String = ""
-    ): AuthResult {
-        Log.d(TAG, "registerUser: starting registration email=$email role=${role.name}")
-
-        // Step 1: Create Firebase Auth account
-        val registerResult = authManager.registerWithEmail(email, password)
-        if (registerResult.isFailure) {
-            val error = mapFirebaseError(registerResult.exceptionOrNull())
-            Log.e(TAG, "registerUser: Auth creation FAILED mapped='$error' raw=${registerResult.exceptionOrNull()?.message}")
-            return AuthResult.Error(error)
-        }
-
-        val firebaseUser = registerResult.getOrNull()!!
-        Log.d(TAG, "registerUser: Auth created uid=${firebaseUser.uid}, now saving to Firestore")
-
-        // Step 2: Build user model with all required fields
-        val model = UserModel(
-            uid         = firebaseUser.uid,
-            fullName    = fullName,
-            email       = email,
-            phone       = phone,
-            role        = role.name,
-            shopName    = shopName,
-            villageName = villageName
-        )
-
-        // Step 3: Save to Firestore
-        val saveResult = authManager.saveUserToFirestore(model)
-        return if (saveResult.isSuccess) {
-            Log.d(TAG, "registerUser: SUCCESS uid=${firebaseUser.uid} role=${role.name}")
-            AuthResult.Success(model)
-        } else {
-            val error = mapFirebaseError(saveResult.exceptionOrNull())
-            Log.e(TAG, "registerUser: Firestore save FAILED mapped='$error' raw=${saveResult.exceptionOrNull()?.message}")
-            // Auth account was created but Firestore save failed — user can still be logged in
-            // Return partial success with an in-memory model so app can proceed
-            AuthResult.Error("Account created but profile save failed: $error")
-        }
-    }
-
-    // ─── Google Sign-In ──────────────────────────────────────────────
-
-    suspend fun loginWithGoogle(
-        idToken: String,
-        fullName: String = "",
-        email: String = "",
-        role: UserRole = UserRole.BUYER
-    ): AuthResult {
-        Log.d(TAG, "loginWithGoogle: attempting Google sign-in")
-        val result = authManager.signInWithGoogle(idToken)
-        if (result.isFailure) {
-            val error = mapFirebaseError(result.exceptionOrNull())
-            Log.e(TAG, "loginWithGoogle: FAILED mapped='$error'")
-            return AuthResult.Error(error)
-        }
-        val firebaseUser = result.getOrNull()!!
-        Log.d(TAG, "loginWithGoogle: Auth OK uid=${firebaseUser.uid}")
-
-        val exists = authManager.checkUserExists(firebaseUser.uid)
-        val model = if (exists) {
-            Log.d(TAG, "loginWithGoogle: existing user, loading Firestore profile")
-            val existingModel = authManager.getUserFromFirestore(firebaseUser.uid).getOrNull()
-            if (existingModel != null && !existingModel.role.equals(role.name, ignoreCase = true)) {
-                Log.e(TAG, "loginWithGoogle: Role mismatch! Expected ${role.name}, got ${existingModel.role}")
-                authManager.signOut()
-                val actualRole = existingModel.role.lowercase().replaceFirstChar { it.uppercase() }
-                return AuthResult.Error("This account is registered as $actualRole")
+    ): AuthResult = withContext(Dispatchers.IO + kotlinx.coroutines.NonCancellable) {
+        try {
+            // STEP 1: Create Firebase Auth Account
+            val registerResult = authManager.registerWithEmail(email, password)
+            if (registerResult.isFailure) {
+                return@withContext AuthResult.Error(mapFirebaseError(registerResult.exceptionOrNull()))
             }
-            existingModel
-        } else {
-            Log.d(TAG, "loginWithGoogle: new user, creating Firestore profile role=${role.name}")
-            val newModel = UserModel(
-                uid      = firebaseUser.uid,
-                fullName = firebaseUser.displayName ?: fullName,
-                email    = firebaseUser.email ?: email,
-                phone    = "",
-                role     = role.name
+
+            val firebaseUser = registerResult.getOrNull()!!
+            val model = UserModel(
+                uid         = firebaseUser.uid,
+                fullName    = fullName,
+                email       = email,
+                phone       = phone,
+                role        = role.name,
+                shopName    = shopName,
+                villageName = villageName
             )
-            authManager.saveUserToFirestore(newModel)
-            newModel
+
+            // STEP 2: Save to Firestore with a robust strategy
+            val saveResult = try {
+                // Increase timeout to 30s for village/slow networks
+                kotlinx.coroutines.withTimeout(30000) {
+                    authManager.saveUserToFirestore(model)
+                }
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Log.e(TAG, "registerUser: Profile save FAILED", e)
+                Result.failure(e)
+            }
+
+            if (saveResult.isSuccess) {
+                AuthResult.Success(model)
+            } else {
+                // If profile save fails, we MUST report it so the user can try again
+                // and we don't end up with "ghost" accounts.
+                AuthResult.Error("Account created but profile save failed. Please check internet and try again.")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "registerUser: FATAL ERROR", e)
+            AuthResult.Error("Registration error: ${e.localizedMessage}")
         }
-        Log.d(TAG, "loginWithGoogle: SUCCESS role=${model?.role}")
-        return AuthResult.Success(model)
     }
 
-    // ─── Forgot Password ─────────────────────────────────────────────
 
-    suspend fun sendPasswordReset(email: String): AuthResult {
-        Log.d(TAG, "sendPasswordReset: email=$email")
-        val result = authManager.sendPasswordResetEmail(email)
-        return if (result.isSuccess) {
-            Log.d(TAG, "sendPasswordReset: email sent")
+    suspend fun getSessionUser(): UserModel? = withContext(Dispatchers.IO) {
+        val uid = authManager.currentUser?.uid ?: return@withContext null
+        authManager.getUserFromFirestore(uid).getOrNull()
+    }
+
+    suspend fun sendPasswordReset(email: String): AuthResult = withContext(Dispatchers.IO) {
+        val result = authManager.sendPasswordReset(email)
+        if (result.isSuccess) {
             AuthResult.Success(null)
         } else {
-            val error = mapFirebaseError(result.exceptionOrNull())
-            Log.e(TAG, "sendPasswordReset: FAILED mapped='$error'")
-            AuthResult.Error(error)
+            AuthResult.Error(mapFirebaseError(result.exceptionOrNull()))
         }
     }
 
-    // ─── Session ─────────────────────────────────────────────────────
-
-    suspend fun getSessionUser(): UserModel? {
-        val uid = authManager.currentUser?.uid ?: return null
-        Log.d(TAG, "getSessionUser: uid=$uid")
-        return authManager.getUserFromFirestore(uid).getOrNull()
-    }
-
-    // ─── Error Mapping ────────────────────────────────────────────────
-    // ⚠️ CRITICAL FIX: Firebase Android SDK throws FirebaseAuthException.
-    // The correct way to identify the error is via e.errorCode (not e.message).
-    // Error codes: https://firebase.google.com/docs/reference/android/com/google/firebase/auth/FirebaseAuthException
-
     private fun mapFirebaseError(e: Throwable?): String {
-        if (e == null) return "An unexpected error occurred"
-
-        // ── FirebaseAuthException: check errorCode first (most reliable) ──
-        if (e is FirebaseAuthException) {
-            val code = e.errorCode
-            Log.d(TAG, "mapFirebaseError: FirebaseAuthException errorCode=$code")
-            return when (code) {
-                // Registration errors
-                "ERROR_EMAIL_ALREADY_IN_USE"       -> "This email is already registered. Please sign in instead."
-                "ERROR_INVALID_EMAIL"              -> "Invalid email format. Please enter a valid email address."
-                "ERROR_WEAK_PASSWORD"              -> "Password is too weak. Use at least 6 characters."
-                "ERROR_OPERATION_NOT_ALLOWED"      -> "Email/password sign-in is not enabled. Contact support."
-
-                // Login errors
-                "ERROR_WRONG_PASSWORD"             -> "Incorrect password. Please try again."
-                "ERROR_USER_NOT_FOUND"             -> "No account found with this email. Please register."
-                "ERROR_USER_DISABLED"              -> "This account has been disabled. Contact support."
-                "ERROR_INVALID_CREDENTIAL"         -> "Incorrect email or password. Please try again."
-                "ERROR_TOO_MANY_REQUESTS"          -> "Too many failed attempts. Please wait and try again."
-                "ERROR_NETWORK_REQUEST_FAILED"     -> "No internet connection. Check your network and retry."
-                "ERROR_ACCOUNT_EXISTS_WITH_DIFFERENT_CREDENTIAL" ->
-                    "An account already exists with this email using a different sign-in method."
-
-                // Reset password
-                "ERROR_MISSING_EMAIL"              -> "Please enter your email address."
-
-                // Catch-all for any unhandled Firebase error codes
-                else -> {
-                    Log.w(TAG, "mapFirebaseError: unhandled errorCode=$code msg=${e.message}")
-                    "Authentication error ($code). Please try again."
-                }
+        if (e == null) return "Authentication failed"
+        
+        // Handle Firebase Auth Errors
+        if (e is com.google.firebase.auth.FirebaseAuthException) {
+            return when (e.errorCode) {
+                "ERROR_EMAIL_ALREADY_IN_USE" -> "This email is already registered. Try logging in."
+                "ERROR_INVALID_EMAIL" -> "Please enter a valid email address."
+                "ERROR_WEAK_PASSWORD" -> "Password is too weak. Use at least 6 characters."
+                "ERROR_WRONG_PASSWORD" -> "Incorrect password. Please try again."
+                "ERROR_USER_NOT_FOUND" -> "No account found with this email."
+                "ERROR_NETWORK_REQUEST_FAILED" -> "Network error. Please check your internet."
+                "ERROR_TOO_MANY_REQUESTS" -> "Too many attempts. Please try again later."
+                else -> e.message ?: "Authentication failed"
             }
         }
 
-        // ── Non-FirebaseAuthException: check message as fallback ──
-        val msg = e.message ?: ""
-        Log.d(TAG, "mapFirebaseError: non-Firebase exception msg=$msg")
-        return when {
-            msg.contains("INVALID_EMAIL", ignoreCase = true)           -> "Invalid email format."
-            msg.contains("EMAIL_EXISTS", ignoreCase = true)            -> "This email is already registered."
-            msg.contains("email address is already in use", ignoreCase = true) -> "This email is already registered."
-            msg.contains("WEAK_PASSWORD", ignoreCase = true)           -> "Password is too weak. Use at least 6 characters."
-            msg.contains("least 6 characters", ignoreCase = true)      -> "Password must be at least 6 characters."
-            msg.contains("TOO_MANY_REQUESTS", ignoreCase = true)       -> "Too many attempts. Please try again later."
-            msg.contains("NETWORK_ERROR", ignoreCase = true)           -> "No internet connection. Check your network."
-            msg.contains("network", ignoreCase = true)                 -> "Network error. Please check your connection."
-            msg.contains("badly formatted", ignoreCase = true)         -> "Invalid email format."
-            msg.contains("no user record", ignoreCase = true)          -> "No account found with this email."
-            msg.contains("password is invalid", ignoreCase = true)     -> "Incorrect password."
-            else -> "Authentication failed: ${msg.take(80)}"
+        // Handle Firestore Errors
+        if (e is com.google.firebase.firestore.FirebaseFirestoreException) {
+            return when (e.code) {
+                com.google.firebase.firestore.FirebaseFirestoreException.Code.PERMISSION_DENIED -> "Permission denied. Please contact support."
+                com.google.firebase.firestore.FirebaseFirestoreException.Code.UNAVAILABLE -> "Database is currently unavailable. Try later."
+                else -> "Database error: ${e.message}"
+            }
         }
+
+        return e.message ?: "An unexpected error occurred"
     }
 }
 

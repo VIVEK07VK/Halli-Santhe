@@ -29,7 +29,8 @@ class InquiryRepository {
                 .whereEqualTo("sellerId", sellerId)
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
-                        close(error)
+                        error.printStackTrace()
+                        close()
                         return@addSnapshotListener
                     }
                     val inquiries = snapshot?.toObjects(Inquiry::class.java) ?: emptyList()

@@ -18,7 +18,8 @@ class EarningsRepository {
                 .whereEqualTo("orderStatus", "DELIVERED")
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) {
-                        close(error)
+                        error.printStackTrace()
+                        close()
                         return@addSnapshotListener
                     }
                     val orders = snapshot?.toObjects(Order::class.java) ?: emptyList()

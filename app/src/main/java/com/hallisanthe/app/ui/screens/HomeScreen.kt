@@ -110,7 +110,7 @@ fun BuyerHomeScreen(
                     contentPadding        = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(filteredList) { product ->
+                    items(filteredList, key = { it.id }) { product ->
                         RecommendedProductCard(
                             product        = product,
                             isFavorite     = favoriteIds.contains(product.id),

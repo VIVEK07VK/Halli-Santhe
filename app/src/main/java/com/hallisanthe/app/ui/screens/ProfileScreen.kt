@@ -41,7 +41,8 @@ fun ProfileScreen(
     onNavigateToAddresses: () -> Unit,
     onNavigateToRecentlyViewed: () -> Unit,
     onNavigateToHelp: () -> Unit,
-    onNavigateToAbout: () -> Unit
+    onNavigateToAbout: () -> Unit,
+    onNavigateToEditProfile: () -> Unit
 ) {
     val sessionUser by authViewModel.sessionUser.collectAsState()
     val userProfile by profileViewModel.userProfile.collectAsState()
@@ -131,6 +132,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Menu items
+            ProfileMenuItem(icon = Icons.Default.Edit,          title = "Edit Profile",      onClick = onNavigateToEditProfile)
             ProfileMenuItem(icon = Icons.Default.ShoppingBag,   title = "My Orders",        onClick = onNavigateToOrders)
             ProfileMenuItem(icon = Icons.Default.LocationOn,     title = "Saved Addresses",   onClick = onNavigateToAddresses)
             ProfileMenuItem(icon = Icons.Default.Favorite,       title = "My Wishlist",       onClick = onNavigateToFavorites)

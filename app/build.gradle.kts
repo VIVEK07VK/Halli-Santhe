@@ -52,6 +52,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.gms:play-services-analytics-impl:18.2.0")
     val composeBom = platform("androidx.compose:compose-bom:2024.05.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
@@ -72,9 +73,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
-
-    // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:21.2.0")
+
 
     // ViewModel + Compose integration
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")

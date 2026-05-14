@@ -32,6 +32,7 @@ import com.hallisanthe.app.viewmodel.HomeViewModel
 import com.hallisanthe.app.viewmodel.SearchViewModel
 import com.hallisanthe.app.viewmodel.CartViewModel
 import com.hallisanthe.app.viewmodel.FavoriteViewModel
+import com.hallisanthe.app.utils.ProductImageMapper
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -144,7 +145,7 @@ fun SearchScreen(
                             Text("Showing ${filteredProducts.size} results", fontSize = 12.sp, color = TextSecondary)
                             Spacer(modifier = Modifier.height(8.dp))
                         }
-                        items(filteredProducts) { product ->
+                        items(filteredProducts, key = { it.id }) { product ->
                             SearchResultItem(
                                 product = product,
                                 isFavorite = favoriteIds.contains(product.id),
@@ -227,12 +228,20 @@ fun SearchResultItem(
         elevation = CardDefaults.cardElevation(1.dp)
     ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = product.imageUrl,
-                contentDescription = null,
-                modifier = Modifier.size(80.dp).clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
-            )
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(BackgroundLight.copy(alpha = 0.5f)),
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = ProductImageMapper.getIllustration(product),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize().padding(8.dp),
+                    contentScale = ContentScale.Fit
+                )
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(product.name, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = PrimaryGreenDark)

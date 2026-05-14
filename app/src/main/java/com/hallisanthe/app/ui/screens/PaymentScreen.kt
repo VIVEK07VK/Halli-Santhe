@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import com.hallisanthe.app.ui.theme.*
 import com.hallisanthe.app.utils.UpiApp
 import com.hallisanthe.app.utils.UpiPaymentManager
+import com.hallisanthe.app.ui.components.UpiAppSelector
 import com.hallisanthe.app.viewmodel.CartViewModel
 import com.hallisanthe.app.viewmodel.PaymentState
 
@@ -48,6 +49,15 @@ fun PaymentScreen(
     
     var selectedPayment by remember { mutableStateOf(PaymentMethod.UPI) }
     var selectedUpiApp  by remember { mutableStateOf<UpiApp?>(null) }
+    
+    val installedUpiApps = remember { UpiPaymentManager.getInstalledUpiApps(context) }
+    
+    // Auto-select first available app if none selected
+    LaunchedEffect(installedUpiApps) {
+        if (selectedUpiApp == null && installedUpiApps.isNotEmpty()) {
+            selectedUpiApp = installedUpiApps.first()
+        }
+    }
     
     val upiLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -70,80 +80,112 @@ fun PaymentScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Select Payment", fontWeight = FontWeight.Bold) },
+                title = { Text("Select Payment", fontWeight = FontWeight.Bold, color = Color(0xFF1B3A2D)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color(0xFF1B3A2D))
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFF9F4EE))
             )
         },
         bottomBar = {
-            Surface(tonalElevation = 8.dp, shadowElevation = 8.dp) {
-                Button(
-                    onClick = {
-                        if (selectedPayment == PaymentMethod.COD) {
-                            cartViewModel.checkoutAndCreateOrder(paymentMethod = "COD")
-                        } else {
-                            if (selectedUpiApp == null) {
-                                Toast.makeText(context, "Please select a UPI app", Toast.LENGTH_SHORT).show()
-                            } else {
-                                val intent = UpiPaymentManager.createUpiIntent(
-                                    upiId = "hallisanthe@upi",
-                                    name = "Halli Santhe",
-                                    transactionId = "TXN${System.currentTimeMillis()}",
-                                    note = "Marketplace Payment",
-                                    amount = String.format("%.2f", cartSummary.finalTotal),
-                                    packageName = selectedUpiApp?.packageName
-                                )
-                                upiLauncher.launch(intent)
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(16.dp).height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                    enabled = paymentState !is PaymentState.Processing
+            Surface(
+                color = Color.White,
+                tonalElevation = 8.dp,
+                shadowElevation = 16.dp,
+                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .navigationBarsPadding() // CRITICAL: Prevents hiding behind system bar
+                        .padding(24.dp)
                 ) {
-                    if (paymentState is PaymentState.Processing) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
-                    } else {
-                        Text("Pay ₹${String.format("%.2f", cartSummary.finalTotal)}", fontWeight = FontWeight.Bold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Total Amount", color = TextSecondary, fontSize = 14.sp)
+                        Text(
+                            "₹${String.format("%.2f", cartSummary.finalTotal)}",
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 22.sp,
+                            color = PrimaryGreenDark
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Button(
+                        onClick = {
+                            if (selectedPayment == PaymentMethod.COD) {
+                                cartViewModel.checkoutAndCreateOrder(paymentMethod = "COD")
+                            } else {
+                                if (selectedUpiApp == null) {
+                                    Toast.makeText(context, "Please select a UPI app", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    val intent = UpiPaymentManager.createUpiIntent(
+                                        upiId = "hallisanthe@upi",
+                                        name = "Halli Santhe",
+                                        transactionId = "TXN${System.currentTimeMillis()}",
+                                        note = "Marketplace Payment",
+                                        amount = String.format("%.2f", cartSummary.finalTotal),
+                                        packageName = selectedUpiApp?.packageName
+                                    )
+                                    upiLauncher.launch(intent)
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(60.dp),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen), // Theme consistent
+                        enabled = paymentState !is PaymentState.Processing
+                    ) {
+                        if (paymentState is PaymentState.Processing) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White, strokeWidth = 2.dp)
+                        } else {
+                            Text(
+                                if (selectedPayment == PaymentMethod.COD) "PLACE ORDER" else "PAY NOW",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
-        }
+        },
+        containerColor = Color(0xFFF9F4EE)
     ) { paddingValues ->
-        LazyColumn(modifier = Modifier.padding(paddingValues).padding(16.dp)) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp)
+        ) {
             item {
-                SectionTitle("Choose Payment Method")
-                PaymentMethod.entries.forEach { method ->
-                    PaymentMethodCard(
-                        method = method,
-                        isSelected = selectedPayment == method,
-                        onClick = { selectedPayment = method }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                SectionTitle("Payment Methods")
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            items(PaymentMethod.entries.size) { index ->
+                val method = PaymentMethod.entries[index]
+                PaymentMethodCard(
+                    method = method,
+                    isSelected = selectedPayment == method,
+                    onClick = { selectedPayment = method }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
             }
 
             if (selectedPayment == PaymentMethod.UPI) {
                 item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    SectionTitle("Select UPI App")
-                    UpiPaymentManager.SUPPORTED_APPS.forEach { upiApp ->
-                        val isInstalled = UpiPaymentManager.isAppInstalled(context, upiApp.packageName)
-                        UpiAppRow(
-                            upiApp = upiApp,
-                            isSelected = selectedUpiApp == upiApp,
-                            isInstalled = isInstalled,
-                            onClick = {
-                                if (isInstalled) selectedUpiApp = upiApp
-                                else Toast.makeText(context, "App not installed", Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                    SectionTitle("Select UPI Application")
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    UpiAppSelector(
+                        installedApps = installedUpiApps,
+                        selectedApp = selectedUpiApp,
+                        onAppSelected = { selectedUpiApp = it }
+                    )
                 }
             }
         }
@@ -155,82 +197,85 @@ fun SectionTitle(title: String) {
     Text(
         text       = title,
         fontWeight = FontWeight.Bold,
-        fontSize   = 16.sp,
-        color      = PrimaryGreenDark,
-        modifier   = Modifier.padding(vertical = 8.dp)
+        fontSize   = 15.sp,
+        color      = Color(0xFF1B3A2D),
+        modifier   = Modifier.padding(start = 4.dp)
     )
 }
 
 @Composable
 fun PaymentMethodCard(method: PaymentMethod, isSelected: Boolean, onClick: () -> Unit) {
-    val borderColor = if (isSelected) PrimaryGreen else Color.Transparent
-    val backgroundColor = if (isSelected) PrimaryGreen.copy(alpha = 0.05f) else Color.White
+    val borderColor = if (isSelected) Color(0xFF2E7D32) else Color.Transparent
+    val backgroundColor = if (isSelected) Color(0xFF2E7D32).copy(alpha = 0.05f) else Color.White
 
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }.border(1.dp, borderColor, RoundedCornerShape(12.dp)),
-        shape    = RoundedCornerShape(12.dp),
-        colors   = CardDefaults.cardColors(containerColor = backgroundColor)
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(method.icon, contentDescription = null, tint = if (isSelected) PrimaryGreen else TextSecondary)
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(method.label, fontWeight = FontWeight.Bold, color = PrimaryGreenDark, modifier = Modifier.weight(1f))
-            RadioButton(selected = isSelected, onClick = onClick, colors = RadioButtonDefaults.colors(selectedColor = PrimaryGreen))
-        }
-    }
-}
-
-@Composable
-fun UpiAppRow(upiApp: UpiApp, isSelected: Boolean, isInstalled: Boolean, onClick: () -> Unit) {
-    val borderColor = when {
-        isSelected -> SecondaryOrange
-        !isInstalled -> Color.LightGray.copy(alpha = 0.1f)
-        else -> Color.LightGray.copy(alpha = 0.3f)
-    }
-    
-    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() }
-            .border(if (isSelected) 2.dp else 1.dp, borderColor, RoundedCornerShape(12.dp))
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .border(if (isSelected) 1.5.dp else 1.dp, if (isSelected) Color(0xFF2E7D32) else Color.White, RoundedCornerShape(16.dp)),
+        shape    = RoundedCornerShape(16.dp),
+        colors   = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(if (isSelected) 0.dp else 2.dp)
     ) {
-        Box(
-            modifier = Modifier.size(40.dp).clip(CircleShape).background(if (isInstalled) SurfaceLight else Color.LightGray.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center
-        ) {
-            val emoji = when {
-                upiApp.name.contains("Google", true) -> "G"
-                upiApp.name.contains("PhonePe", true) -> "P"
-                upiApp.name.contains("Paytm", true) -> "Py"
-                else -> "U"
+        Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.size(40.dp).background(Color(0xFFF9F4EE), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(method.icon, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(24.dp))
             }
-            Text(emoji, fontWeight = FontWeight.Black, color = if (isInstalled) PrimaryGreenDark else Color.Gray)
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(upiApp.name, fontWeight = FontWeight.SemiBold, color = if (isInstalled) PrimaryGreenDark else Color.Gray)
-            if (!isInstalled) {
-                Text("Not installed", fontSize = 10.sp, color = Color.Red)
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(method.label, fontWeight = FontWeight.Bold, color = Color(0xFF1B3A2D), fontSize = 15.sp)
+                Text(if (method == PaymentMethod.UPI) "Pay securely via your favorite apps" else "Pay when you receive the order", fontSize = 11.sp, color = Color.Gray)
             }
-        }
-        if (isSelected) {
-            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = SecondaryOrange)
+            RadioButton(
+                selected = isSelected,
+                onClick = onClick,
+                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF2E7D32))
+            )
         }
     }
 }
 
 private fun handleUpiResponse(response: String, viewModel: CartViewModel, context: Context) {
+    // Standard UPI response parsing
+    // Example: txnId=ABCD123&responseCode=00&Status=SUCCESS&txnRef=123456
     val resMap = response.split("&").associate { 
         val parts = it.split("=")
         (parts.getOrNull(0) ?: "") to (parts.getOrNull(1) ?: "")
     }
-    val status = resMap["Status"]?.lowercase() ?: ""
-    if (status == "success") {
-        viewModel.checkoutAndCreateOrder(paymentMethod = "UPI", transactionId = resMap["txnId"] ?: "", paymentStatus = "PAID")
-    } else {
-        Toast.makeText(context, "Payment Failed", Toast.LENGTH_SHORT).show()
+    
+    val status = resMap["Status"]?.uppercase() ?: ""
+    val responseCode = resMap["responseCode"] ?: ""
+    
+    when {
+        status == "SUCCESS" || responseCode == "00" -> {
+            val txnId = resMap["txnId"] ?: resMap["tr"] ?: "TXN${System.currentTimeMillis()}"
+            viewModel.checkoutAndCreateOrder(
+                paymentMethod = "UPI", 
+                transactionId = txnId, 
+                paymentStatus = "PAID"
+            )
+            Toast.makeText(context, "Payment Successful", Toast.LENGTH_SHORT).show()
+        }
+        status == "FAILURE" -> {
+            Toast.makeText(context, "Payment Failed", Toast.LENGTH_SHORT).show()
+        }
+        status == "CANCEL" || status == "CANCELLED" -> {
+            Toast.makeText(context, "Payment Cancelled", Toast.LENGTH_SHORT).show()
+        }
+        else -> {
+            // Some apps might not return "SUCCESS" but still be successful if responseCode is 00
+            if (responseCode == "00") {
+                viewModel.checkoutAndCreateOrder(
+                    paymentMethod = "UPI", 
+                    transactionId = resMap["txnId"] ?: "TXN${System.currentTimeMillis()}", 
+                    paymentStatus = "PAID"
+                )
+            } else {
+                Toast.makeText(context, "Payment status: $status", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

@@ -11,46 +11,53 @@ import com.hallisanthe.app.repository.InquiryRepository
 import com.hallisanthe.app.repository.OrderRepository
 import com.hallisanthe.app.repository.ProductRepository
 import com.hallisanthe.app.room.DatabaseProvider
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class SellerViewModel(application: Application) : AndroidViewModel(application) {
     private val productDao        = DatabaseProvider.getDatabase(application).productDao()
     private val productRepository = ProductRepository(productDao)
     private val orderRepository   = OrderRepository()
     private val inquiryRepository = InquiryRepository()
 
-    private val currentUserId: String
-        get() = FirebaseManager.auth.currentUser?.uid ?: ""
+    private val _currentUserId = MutableStateFlow(FirebaseManager.auth.currentUser?.uid ?: "")
+    val currentUserId: StateFlow<String> = _currentUserId
 
-    val sellerProducts: StateFlow<List<Product>> = productRepository.localProducts
-        .map { products -> products.filter { it.sellerId == currentUserId } }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    val sellerProducts: StateFlow<List<Product>> = kotlinx.coroutines.flow.combine(
+        productRepository.localProducts,
+        _currentUserId
+    ) { products, userId ->
+        products.filter { it.sellerId == userId }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     private val _totalRevenue = MutableStateFlow(0.0)
     val totalRevenue: StateFlow<Double> = _totalRevenue
 
-    val sellerOrders: StateFlow<List<Order>> = orderRepository.getOrdersForSeller(currentUserId).stateIn(
+    val sellerOrders: StateFlow<List<Order>> = _currentUserId.flatMapLatest { userId ->
+        orderRepository.getOrdersForSeller(userId)
+    }.stateIn(
         scope   = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
 
-    val sellerInquiries: StateFlow<List<Inquiry>> = inquiryRepository.getInquiriesForSeller(currentUserId).stateIn(
+    val sellerInquiries: StateFlow<List<Inquiry>> = _currentUserId.flatMapLatest { userId ->
+        inquiryRepository.getInquiriesForSeller(userId)
+    }.stateIn(
         scope   = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
 
     init {
+        // Refresh the user ID in case of late initialization
+        _currentUserId.value = FirebaseManager.auth.currentUser?.uid ?: ""
+        
         // Initial fetch
         viewModelScope.launch {
             productRepository.fetchProductsFromFirebase()
@@ -70,7 +77,7 @@ class SellerViewModel(application: Application) : AndroidViewModel(application) 
     fun addProduct(name: String, price: Double, stock: Int, category: String, imageUrl: String, unit: String = "kg") {
         viewModelScope.launch {
             val newProduct = Product(
-                sellerId   = currentUserId,
+                sellerId   = currentUserId.value,
                 name       = name,
                 price      = price,
                 stock      = stock,
@@ -112,6 +119,12 @@ class SellerViewModel(application: Application) : AndroidViewModel(application) 
     fun respondToInquiry(inquiryId: String, status: String) {
         viewModelScope.launch {
             inquiryRepository.respondToInquiry(inquiryId, status)
+        }
+    }
+
+    fun refreshProducts() {
+        viewModelScope.launch {
+            productRepository.fetchProductsFromFirebase()
         }
     }
 }

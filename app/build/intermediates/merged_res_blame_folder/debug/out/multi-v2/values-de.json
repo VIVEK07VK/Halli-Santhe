@@ -57,23 +57,6 @@
                     }
                 },
                 {
-                    "source": "C:\\Gradle\\caches\\transforms-3\\8798392146d602676e10c8583e1d4781\\transformed\\play-services-basement-18.3.0\\res\\values-de\\values.xml",
-                    "from": {
-                        "startLines": "4",
-                        "startColumns": "0",
-                        "startOffsets": "195",
-                        "endColumns": "140",
-                        "endOffsets": "335"
-                    },
-                    "to": {
-                        "startLines": "60",
-                        "startColumns": "4",
-                        "startOffsets": "6003",
-                        "endColumns": "144",
-                        "endOffsets": "6143"
-                    }
-                },
-                {
                     "source": "C:\\Gradle\\caches\\transforms-3\\5a267c772be4f1ba9725c47433267ed7\\transformed\\browser-1.4.0\\res\\values-de\\values-de.xml",
                     "from": {
                         "startLines": "2,3,4,5",
@@ -91,7 +74,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Gradle\\caches\\transforms-3\\1d086b68e500ccf72439bda725c00e36\\transformed\\play-services-base-18.3.0\\res\\values-de\\values.xml",
+                    "source": "C:\\Gradle\\caches\\transforms-3\\7d2140e77edc294af152492e5e265302\\transformed\\play-services-base-18.5.0\\res\\values-de\\values.xml",
                     "from": {
                         "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
                         "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
@@ -105,6 +88,23 @@
                         "startOffsets": "4941,5050,5214,5342,5454,5632,5763,5884,6148,6328,6440,6609,6740,6902,7078,7149,7212",
                         "endColumns": "108,163,127,111,177,130,120,118,179,111,168,130,161,175,70,62,79",
                         "endOffsets": "5045,5209,5337,5449,5627,5758,5879,5998,6323,6435,6604,6735,6897,7073,7144,7207,7287"
+                    }
+                },
+                {
+                    "source": "C:\\Gradle\\caches\\transforms-3\\ed9a4e010c3f5c5560983b296dde24f6\\transformed\\play-services-basement-18.4.0\\res\\values-de\\values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "140",
+                        "endOffsets": "335"
+                    },
+                    "to": {
+                        "startLines": "60",
+                        "startColumns": "4",
+                        "startOffsets": "6003",
+                        "endColumns": "144",
+                        "endOffsets": "6143"
                     }
                 },
                 {

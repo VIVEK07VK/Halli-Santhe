@@ -1,9 +1,8 @@
 package com.hallisanthe.app.ui.screens
 
-import android.app.Activity
-import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import com.hallisanthe.app.ui.theme.*
+import com.hallisanthe.app.ui.components.AppTextField
+
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -83,58 +82,34 @@ fun HalliInputField(
     keyboardType: androidx.compose.ui.text.input.KeyboardType =
         androidx.compose.ui.text.input.KeyboardType.Text
 ) {
-    Column(modifier = modifier) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(label, fontSize = 13.sp) },
-            leadingIcon = {
-                Icon(leadingIcon, contentDescription = label, tint = GreenLight)
-            },
-            trailingIcon = if (isPassword) {
-                {
-                    IconButton(onClick = onPasswordToggle) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Filled.VisibilityOff
-                                          else Icons.Filled.Visibility,
-                            contentDescription = "Toggle password",
-                            tint = TextSecondary
-                        )
-                    }
+    AppTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = label,
+        leadingIcon = leadingIcon,
+        modifier = modifier,
+        isPassword = isPassword,
+        visualTransformation = if (isPassword && !passwordVisible)
+            androidx.compose.ui.text.input.PasswordVisualTransformation()
+        else
+            androidx.compose.ui.text.input.VisualTransformation.None,
+        trailingIcon = if (isPassword) {
+            {
+                IconButton(onClick = onPasswordToggle) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Filled.VisibilityOff
+                                      else Icons.Filled.Visibility,
+                        contentDescription = "Toggle password",
+                        tint = TextSecondary
+                    )
                 }
-            } else null,
-            visualTransformation = if (isPassword && !passwordVisible)
-                androidx.compose.ui.text.input.PasswordVisualTransformation()
-            else
-                androidx.compose.ui.text.input.VisualTransformation.None,
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                keyboardType = keyboardType
-            ),
-            isError = error != null,
-            singleLine = true,
-            shape = RoundedCornerShape(14.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = GreenAccent,
-                unfocusedBorderColor = Color(0xFFCFD8DC),
-                focusedLabelColor = GreenAccent,
-                cursorColor = GreenAccent,
-                errorBorderColor = ErrorRed,
-                errorLabelColor = ErrorRed,
-                focusedContainerColor = CardWhite,
-                unfocusedContainerColor = CardWhite,
-                errorContainerColor = Color(0xFFFFF8F8)
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-        AnimatedVisibility(visible = error != null) {
-            Text(
-                text = error ?: "",
-                color = ErrorRed,
-                fontSize = 11.sp,
-                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
-            )
-        }
-    }
+            }
+        } else null,
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+            keyboardType = keyboardType
+        ),
+        error = error
+    )
 }
 
 @Composable
@@ -171,53 +146,6 @@ fun PrimaryAuthButton(
     }
 }
 
-@Composable
-fun GoogleSignInButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isLoading: Boolean = false
-) {
-    OutlinedButton(
-        onClick = onClick,
-        enabled = !isLoading,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.5.dp, Color(0xFFE0E0E0)),
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = CardWhite),
-        modifier = modifier
-            .fillMaxWidth()
-            .height(54.dp)
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(
-                color = GreenPrimary,
-                modifier = Modifier.size(22.dp),
-                strokeWidth = 2.5.dp
-            )
-        } else {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                // Google "G" icon
-                Box(
-                    modifier = Modifier
-                        .size(22.dp)
-                        .background(Color(0xFF4285F4), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("G", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                }
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    "Continue with Google",
-                    color = Color(0xFF3C4043),
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 15.sp
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun AuthCard(content: @Composable ColumnScope.() -> Unit) {

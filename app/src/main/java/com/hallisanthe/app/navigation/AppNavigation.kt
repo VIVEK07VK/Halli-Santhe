@@ -11,12 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.hallisanthe.app.models.UserRole
 import com.hallisanthe.app.ui.screens.*
-import com.hallisanthe.app.viewmodel.AuthViewModel
-import com.hallisanthe.app.viewmodel.CartViewModel
-import com.hallisanthe.app.viewmodel.FavoriteViewModel
-import com.hallisanthe.app.viewmodel.OrderTrackingViewModel
-import com.hallisanthe.app.viewmodel.SellerViewModel
-import com.hallisanthe.app.viewmodel.ProfileViewModel
+import com.hallisanthe.app.viewmodel.*
 
 // ─── Route constants ──────────────────────────────────────────────────────────
 
@@ -39,6 +34,7 @@ object Routes {
     const val SELLER_ADD_PRODUCT = "seller_add_product"
     const val SELLER_PROFILE   = "seller_profile"
     const val EDIT_PROFILE     = "edit_profile"
+    const val BUYER_EDIT_PROFILE = "buyer_edit_profile"
     const val SAVED_ADDRESSES  = "saved_addresses"
     const val RECENTLY_VIEWED  = "recently_viewed"
     const val HELP_SUPPORT     = "help_support"
@@ -48,6 +44,8 @@ object Routes {
     const val PAYMENT         = "payment"
     const val ORDER_CONFIRMATION = "order_confirmation/{orderId}"
     const val BUYER_TRACKING  = "buyer_tracking/{orderId}"
+    const val SELLER_EARNINGS = "seller_earnings"
+    const val SELLER_PRODUCTS = "seller_products"
 
     fun login(role: UserRole)    = "login/${role.name}"
     fun register(role: UserRole) = "register/${role.name}"
@@ -66,8 +64,7 @@ fun AppNavigation() {
     val authViewModel: AuthViewModel         = viewModel()
     val cartViewModel: CartViewModel         = viewModel()
     val favoriteViewModel: FavoriteViewModel = viewModel()
-    val sellerViewModel: SellerViewModel     = viewModel()
-    val trackingViewModel: OrderTrackingViewModel = viewModel()
+    val ordersViewModel: OrdersViewModel     = viewModel()
     val profileViewModel: ProfileViewModel   = viewModel()
 
     NavHost(
@@ -137,7 +134,7 @@ fun AppNavigation() {
 
         // ── Modular Nav Graphs ───────────────────────────────────────────
         authGraph(navController, authViewModel)
-        buyerGraph(navController, authViewModel, cartViewModel, favoriteViewModel, trackingViewModel, profileViewModel)
-        sellerGraph(navController, authViewModel, sellerViewModel, profileViewModel)
+        buyerGraph(navController, authViewModel, cartViewModel, favoriteViewModel, ordersViewModel, profileViewModel)
+        sellerGraph(navController, authViewModel, ordersViewModel, profileViewModel)
     }
 }

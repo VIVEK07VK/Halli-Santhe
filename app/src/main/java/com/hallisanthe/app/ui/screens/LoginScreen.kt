@@ -1,8 +1,5 @@
 package com.hallisanthe.app.ui.screens
 
-import android.app.Activity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -52,12 +49,6 @@ fun LoginScreen(
     var emailError by remember { mutableStateOf<String?>(null) }
     var passwordError by remember { mutableStateOf<String?>(null) }
 
-    // Google Sign-In launcher
-    val googleLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        authViewModel.handleGoogleSignInResult(result.data, role)
-    }
 
     // State observation
     LaunchedEffect(uiState) {
@@ -242,22 +233,6 @@ fun LoginScreen(
                         isLoading = isLoading
                     )
 
-                    Spacer(Modifier.height(20.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        HorizontalDivider(Modifier.weight(1f), color = Color(0xFFDDDDDD))
-                        Text("  or continue with  ", color = Color(0xFF9E9E9E), fontSize = 12.sp)
-                        HorizontalDivider(Modifier.weight(1f), color = Color(0xFFDDDDDD))
-                    }
-                    Spacer(Modifier.height(16.dp))
-
-                    GoogleSignInButton(
-                        onClick = {
-                            val webClientId = context.getString(R.string.default_web_client_id)
-                            val intent = authViewModel.getGoogleSignInIntent(context, webClientId)
-                            googleLauncher.launch(intent)
-                        },
-                        isLoading = isLoading
-                    )
 
                     Spacer(Modifier.height(28.dp))
                     Row(

@@ -91,10 +91,11 @@ private fun getStatusDescription(status: OrderStatus): String {
         OrderStatus.WAITING_CONFIRMATION -> "Waiting for seller to confirm."
         OrderStatus.ACCEPTED -> "Seller has accepted your order."
         OrderStatus.PREPARING -> "Your order is being prepared."
-        OrderStatus.PACKED -> "Order is packed and ready."
+        OrderStatus.READY_FOR_PICKUP -> "Order is packed and ready for pickup."
         OrderStatus.OUT_FOR_DELIVERY -> "Out for delivery. Arriving soon!"
-        OrderStatus.READY_FOR_PICKUP -> "Ready for pickup at the store."
         OrderStatus.DELIVERED -> "Order delivered successfully."
         OrderStatus.CANCELLED -> "Order was cancelled."
+        OrderStatus.REJECTED -> "Order was rejected by the seller."
+        else -> "Status: ${status.name}"
     }
 }

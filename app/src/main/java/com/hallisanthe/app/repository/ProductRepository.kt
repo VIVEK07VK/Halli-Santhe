@@ -11,13 +11,17 @@ class ProductRepository(private val productDao: ProductDao) {
     
     val localProducts: Flow<List<Product>> = productDao.getAllProducts()
 
-    suspend fun fetchProductsFromFirebase() {
-        try {
+    suspend fun fetchProductsFromFirebase(): List<Product> {
+        return try {
             val snapshot = FirebaseManager.firestore.collection("products").get().await()
             val products = snapshot.toObjects(Product::class.java)
-            productDao.insertProducts(products)
+            if (products.isNotEmpty()) {
+                productDao.insertProducts(products)
+            }
+            products
         } catch (e: Exception) {
             e.printStackTrace()
+            emptyList()
         }
     }
 
@@ -34,10 +38,10 @@ class ProductRepository(private val productDao: ProductDao) {
     }
 
     suspend fun addProduct(product: Product) {
+        val finalId = if (product.id.isNotEmpty()) product.id else UUID.randomUUID().toString()
+        val finalProduct = if (product.id.isNotEmpty()) product else product.copy(id = finalId)
+        
         try {
-            val finalId = if (product.id.isNotEmpty()) product.id else UUID.randomUUID().toString()
-            val finalProduct = if (product.id.isNotEmpty()) product else product.copy(id = finalId)
-            
             FirebaseManager.firestore.collection("products")
                 .document(finalId)
                 .set(finalProduct)
@@ -45,7 +49,8 @@ class ProductRepository(private val productDao: ProductDao) {
             
             productDao.insertProducts(listOf(finalProduct))
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("ProductRepository", "FAILED TO ADD PRODUCT", e)
+            throw e // Rethrow to let ViewModel handle the error
         }
     }
 
@@ -61,6 +66,22 @@ class ProductRepository(private val productDao: ProductDao) {
     suspend fun deleteProduct(productId: String) {
         try {
             FirebaseManager.firestore.collection("products").document(productId).delete().await()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    suspend fun seedFakeData() {
+        try {
+            val fakeProducts = com.hallisanthe.app.data.FakeProductData.products
+            productDao.insertProducts(fakeProducts)
+            
+            // Seed to Firestore in background
+            fakeProducts.forEach { product ->
+                FirebaseManager.firestore.collection("products")
+                    .document(product.id)
+                    .set(product)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }

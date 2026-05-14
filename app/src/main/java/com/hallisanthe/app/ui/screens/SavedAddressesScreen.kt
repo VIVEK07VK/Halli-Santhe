@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.hallisanthe.app.models.Address
 import com.hallisanthe.app.ui.theme.*
 import com.hallisanthe.app.viewmodel.ProfileViewModel
+import com.hallisanthe.app.ui.components.AppTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,11 +124,11 @@ fun AddAddressDialog(
         title = { Text("Add New Address") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Address Title (e.g. Home, Shop)") })
-                OutlinedTextField(value = village, onValueChange = { village = it }, label = { Text("Village/Town") })
-                OutlinedTextField(value = landmark, onValueChange = { landmark = it }, label = { Text("Landmark") })
-                OutlinedTextField(value = pincode, onValueChange = { pincode = it }, label = { Text("Pincode") })
-                OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("Phone Number") })
+                AppTextField(value = title, onValueChange = { title = it }, label = "Address Title (e.g. Home, Shop)")
+                AppTextField(value = village, onValueChange = { village = it }, label = "Village/Town")
+                AppTextField(value = landmark, onValueChange = { landmark = it }, label = "Landmark")
+                AppTextField(value = pincode, onValueChange = { pincode = it }, label = "Pincode")
+                AppTextField(value = phone, onValueChange = { phone = it }, label = "Phone Number")
             }
         },
         confirmButton = {

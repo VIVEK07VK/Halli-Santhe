@@ -8,13 +8,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.hallisanthe.app.ui.screens.*
 import com.hallisanthe.app.models.*
-import com.hallisanthe.app.viewmodel.AuthViewModel
-import com.hallisanthe.app.viewmodel.CartViewModel
-import com.hallisanthe.app.viewmodel.FavoriteViewModel
-import com.hallisanthe.app.viewmodel.OrderTrackingViewModel
-import com.hallisanthe.app.viewmodel.HomeViewModel
-import com.hallisanthe.app.viewmodel.SearchViewModel
-import com.hallisanthe.app.viewmodel.ProfileViewModel
+import com.hallisanthe.app.viewmodel.*
 import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -23,7 +17,7 @@ fun NavGraphBuilder.buyerGraph(
     authViewModel: AuthViewModel,
     cartViewModel: CartViewModel,
     favoriteViewModel: FavoriteViewModel,
-    trackingViewModel: OrderTrackingViewModel,
+    ordersViewModel: OrdersViewModel,
     profileViewModel: ProfileViewModel
 ) {
     navigation(startDestination = Routes.BUYER_HOME, route = "buyer_graph") {
@@ -129,7 +123,15 @@ fun NavGraphBuilder.buyerGraph(
                 onNavigateToAddresses = { navController.navigate(Routes.SAVED_ADDRESSES) },
                 onNavigateToRecentlyViewed = { navController.navigate(Routes.RECENTLY_VIEWED) },
                 onNavigateToHelp      = { navController.navigate(Routes.HELP_SUPPORT) },
-                onNavigateToAbout     = { navController.navigate(Routes.ABOUT) }
+                onNavigateToAbout     = { navController.navigate(Routes.ABOUT) },
+                onNavigateToEditProfile = { navController.navigate(Routes.BUYER_EDIT_PROFILE) }
+            )
+        }
+
+        composable(Routes.BUYER_EDIT_PROFILE) {
+            EditProfileScreen(
+                profileViewModel = profileViewModel,
+                onBack           = { navController.popBackStack() }
             )
         }
 
@@ -158,7 +160,6 @@ fun NavGraphBuilder.buyerGraph(
                 onBack            = { navController.popBackStack() }
             )
         }
-
 
         composable(Routes.CART) {
             CartScreen(
@@ -195,7 +196,7 @@ fun NavGraphBuilder.buyerGraph(
             val orderId = backStack.arguments?.getString("orderId") ?: ""
             OrderConfirmationScreen(
                 orderId     = orderId,
-                cartViewModel = cartViewModel,
+                ordersViewModel = ordersViewModel,
                 onBackToHome = {
                     navController.navigate(Routes.BUYER_HOME) { popUpTo(0) { inclusive = true } }
                 },
@@ -211,9 +212,9 @@ fun NavGraphBuilder.buyerGraph(
         ) { backStack ->
             val orderId = backStack.arguments?.getString("orderId") ?: ""
             BuyerTrackingScreen(
-                orderId         = orderId,
-                trackingViewModel = trackingViewModel,
-                onBack          = { navController.popBackStack() }
+                orderId       = orderId,
+                ordersViewModel = ordersViewModel,
+                onBack        = { navController.popBackStack() }
             )
         }
     }

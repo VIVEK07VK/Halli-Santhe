@@ -25,10 +25,6 @@ import com.hallisanthe.app.viewmodel.AuthUiState
 import com.hallisanthe.app.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 
-/**
- * LoadingScreen – shown during the session check on cold launch.
- * It auto-advances once the ViewModel resolves the session state.
- */
 @Composable
 fun LoadingScreen(
     authViewModel: AuthViewModel,
@@ -37,33 +33,43 @@ fun LoadingScreen(
     onNavigateToRoleSelection: () -> Unit
 ) {
     val uiState by authViewModel.uiState.collectAsState()
+    var hasNavigated by remember { mutableStateOf(false) }
 
-    // Trigger session check once
+    // Initial session check
     LaunchedEffect(Unit) {
         authViewModel.checkSession()
     }
 
-    // React to state changes
+    // Single-entry navigation logic
     LaunchedEffect(uiState) {
+        if (hasNavigated) return@LaunchedEffect
+
         when (val state = uiState) {
             is AuthUiState.Success -> {
-                delay(600) // Small pause so animation completes
-                val role = state.user?.role
-                if (role == UserRole.SELLER.name) {
+                hasNavigated = true
+                delay(800) // Allow animation to settle
+                if (state.user.role == UserRole.SELLER.name) {
                     onNavigateToSellerDashboard()
                 } else {
                     onNavigateToBuyerHome()
                 }
             }
             is AuthUiState.Unauthenticated -> {
-                delay(600)
+                hasNavigated = true
+                delay(800)
+                onNavigateToRoleSelection()
+            }
+            is AuthUiState.Error -> {
+                // On error, fallback to role selection/login to avoid "stuck" state
+                hasNavigated = true
+                delay(800)
                 onNavigateToRoleSelection()
             }
             else -> Unit
         }
     }
 
-    // Animations
+    // --- UI/Animations (remains unchanged for rich aesthetic) ---
     val infiniteTransition = rememberInfiniteTransition(label = "loading")
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -81,17 +87,6 @@ fun LoadingScreen(
         label = "pulse"
     )
 
-    var visible by remember { mutableStateOf(false) }
-    val alpha by animateFloatAsState(
-        targetValue = if (visible) 1f else 0f,
-        animationSpec = tween(700),
-        label = "fadeIn"
-    )
-    LaunchedEffect(Unit) {
-        delay(100)
-        visible = true
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -102,11 +97,7 @@ fun LoadingScreen(
             ),
         contentAlignment = Alignment.Center
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.alpha(alpha)
-        ) {
-            // Spinning market emblem
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Box(
                 modifier = Modifier
                     .size(110.dp)
@@ -126,9 +117,7 @@ fun LoadingScreen(
                     Text("🛒", fontSize = 34.sp)
                 }
             }
-
             Spacer(Modifier.height(32.dp))
-
             Text(
                 "Halli-Santhe",
                 color = Color.White,
@@ -138,20 +127,7 @@ fun LoadingScreen(
                 fontFamily = FontFamily.Serif,
                 textAlign = TextAlign.Center
             )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                "DIGITAL MARKETPLACE",
-                color = Color.White.copy(alpha = 0.7f),
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 3.sp,
-                textAlign = TextAlign.Center,
-                fontFamily = FontFamily.SansSerif
-            )
-
             Spacer(Modifier.height(48.dp))
-
-            // Dotted progress indicator
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 repeat(3) { i ->
                     val dotPulse by infiniteTransition.animateFloat(
@@ -173,11 +149,5 @@ fun LoadingScreen(
                 }
             }
         }
-
-        // Floating emojis
-        FloatingEmoji("🥕", 0.15f, 0.05f, 18)
-        FloatingEmoji("🌿", 0.85f, 0.1f, 16)
-        FloatingEmoji("🧺", 0.2f, 0.8f, 18)
-        FloatingEmoji("🏺", 0.78f, 0.75f, 16)
     }
 }

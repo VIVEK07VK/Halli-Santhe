@@ -38,6 +38,23 @@
                     }
                 },
                 {
+                    "source": "C:\\Gradle\\caches\\transforms-3\\7d2140e77edc294af152492e5e265302\\transformed\\play-services-base-18.5.0\\res\\values-pa\\values.xml",
+                    "from": {
+                        "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
+                        "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+                        "startOffsets": "193,296,465,591,696,839,964,1073,1172,1330,1435,1604,1732,1881,2038,2099,2161",
+                        "endColumns": "102,168,125,104,142,124,108,98,157,104,168,127,148,156,60,61,77",
+                        "endOffsets": "295,464,590,695,838,963,1072,1171,1329,1434,1603,1731,1880,2037,2098,2160,2238"
+                    },
+                    "to": {
+                        "startLines": "52,53,54,55,56,57,58,59,61,62,63,64,65,66,67,68,69",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "4834,4941,5114,5244,5353,5500,5629,5742,5996,6158,6267,6440,6572,6725,6886,6951,7017",
+                        "endColumns": "106,172,129,108,146,128,112,102,161,108,172,131,152,160,64,65,81",
+                        "endOffsets": "4936,5109,5239,5348,5495,5624,5737,5840,6153,6262,6435,6567,6720,6881,6946,7012,7094"
+                    }
+                },
+                {
                     "source": "C:\\Gradle\\caches\\transforms-3\\28331a32647107d7439b11c58664ab8e\\transformed\\foundation-release\\res\\values-pa\\values-pa.xml",
                     "from": {
                         "startLines": "2,3",
@@ -52,6 +69,23 @@
                         "startOffsets": "20238,20325",
                         "endColumns": "86,86",
                         "endOffsets": "20320,20407"
+                    }
+                },
+                {
+                    "source": "C:\\Gradle\\caches\\transforms-3\\ed9a4e010c3f5c5560983b296dde24f6\\transformed\\play-services-basement-18.4.0\\res\\values-pa\\values.xml",
+                    "from": {
+                        "startLines": "4",
+                        "startColumns": "0",
+                        "startOffsets": "195",
+                        "endColumns": "146",
+                        "endOffsets": "341"
+                    },
+                    "to": {
+                        "startLines": "60",
+                        "startColumns": "4",
+                        "startOffsets": "5845",
+                        "endColumns": "150",
+                        "endOffsets": "5991"
                     }
                 },
                 {
@@ -139,40 +173,6 @@
                         "startOffsets": "7099,7695,7796,7910",
                         "endColumns": "104,100,113,102",
                         "endOffsets": "7199,7791,7905,8008"
-                    }
-                },
-                {
-                    "source": "C:\\Gradle\\caches\\transforms-3\\8798392146d602676e10c8583e1d4781\\transformed\\play-services-basement-18.3.0\\res\\values-pa\\values.xml",
-                    "from": {
-                        "startLines": "4",
-                        "startColumns": "0",
-                        "startOffsets": "195",
-                        "endColumns": "146",
-                        "endOffsets": "341"
-                    },
-                    "to": {
-                        "startLines": "60",
-                        "startColumns": "4",
-                        "startOffsets": "5845",
-                        "endColumns": "150",
-                        "endOffsets": "5991"
-                    }
-                },
-                {
-                    "source": "C:\\Gradle\\caches\\transforms-3\\1d086b68e500ccf72439bda725c00e36\\transformed\\play-services-base-18.3.0\\res\\values-pa\\values.xml",
-                    "from": {
-                        "startLines": "4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20",
-                        "startColumns": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
-                        "startOffsets": "193,296,465,591,696,839,964,1073,1172,1330,1435,1604,1732,1881,2038,2099,2161",
-                        "endColumns": "102,168,125,104,142,124,108,98,157,104,168,127,148,156,60,61,77",
-                        "endOffsets": "295,464,590,695,838,963,1072,1171,1329,1434,1603,1731,1880,2037,2098,2160,2238"
-                    },
-                    "to": {
-                        "startLines": "52,53,54,55,56,57,58,59,61,62,63,64,65,66,67,68,69",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "4834,4941,5114,5244,5353,5500,5629,5742,5996,6158,6267,6440,6572,6725,6886,6951,7017",
-                        "endColumns": "106,172,129,108,146,128,112,102,161,108,172,131,152,160,64,65,81",
-                        "endOffsets": "4936,5109,5239,5348,5495,5624,5737,5840,6153,6262,6435,6567,6720,6881,6946,7012,7094"
                     }
                 }
             ]

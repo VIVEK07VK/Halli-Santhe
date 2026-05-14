@@ -7,6 +7,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -23,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hallisanthe.app.utils.ProductImageMapper
 import coil.compose.AsyncImage
 import com.hallisanthe.app.models.Product
 import com.hallisanthe.app.ui.theme.*
@@ -136,13 +138,26 @@ fun ProductDetailsScreen(
         ) {
             // Product Image
             Box(
-                modifier = Modifier.fillMaxWidth().height(300.dp).background(Color(0xFFF5F5F5))
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(320.dp)
+                    .background(SurfaceLight),
+                contentAlignment = Alignment.Center
             ) {
+                // Soft Glow Background for the illustration
+                Box(
+                    modifier = Modifier
+                        .size(240.dp)
+                        .clip(CircleShape)
+                        .background(PrimaryGreen.copy(alpha = 0.05f))
+                )
+                
                 AsyncImage(
-                    model              = product.imageUrl,
+                    model              = ProductImageMapper.getIllustration(product),
                     contentDescription = product.name,
-                    modifier           = Modifier.fillMaxSize(),
-                    contentScale       = ContentScale.Crop
+                    modifier           = Modifier.fillMaxSize().padding(32.dp),
+                    contentScale       = ContentScale.Fit,
+                    alignment          = Alignment.Center
                 )
                 if (product.discountPercent != null) {
                     Box(

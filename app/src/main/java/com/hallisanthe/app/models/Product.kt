@@ -15,16 +15,17 @@ data class Product(
     val sellerName: String = "",
     val sellerId: String = "",
     val imageUrl: String = "",
-    // Additional fields for UI
     val unit: String = "kg",
     val rating: Double = 4.0,
     val discountPercent: Int? = null,
     val tag: String? = null,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val deliveryTime: String = "30 mins"
 )
 
 data class Category(
     val id: String,
     val name: String,
-    val iconResOrUrl: String // Can be a local drawable name or emoji for dummy data
+    val iconResOrUrl: String
 )
+

@@ -12,6 +12,7 @@ import com.hallisanthe.app.models.UserModel
 import com.hallisanthe.app.repository.AddressRepository
 import com.hallisanthe.app.repository.RecentlyViewedRepository
 import com.hallisanthe.app.room.DatabaseProvider
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -43,8 +44,15 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private fun loadUserProfile() {
         val uid = FirebaseManager.auth.currentUser?.uid ?: return
         viewModelScope.launch {
-            val snapshot = FirebaseManager.firestore.collection("users").document(uid).get().await()
-            _userProfile.value = snapshot.toObject(UserModel::class.java)
+            try {
+                val snapshot = FirebaseManager.firestore.collection("users").document(uid).get().await()
+                val data = snapshot.data
+                if (data != null) {
+                    _userProfile.value = UserModel.fromMap(data)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -61,7 +69,11 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             var imageUrl = _userProfile.value?.profileImageUrl ?: ""
 
             if (imageUri != null) {
-                imageUrl = FirebaseStorageManager.uploadProductImage(imageUri) ?: imageUrl
+                imageUrl = FirebaseStorageManager.uploadProfileImage(
+                    context = getApplication(),
+                    userId = uid,
+                    imageUri = imageUri
+                ) ?: imageUrl
             }
 
             val updatedUser = _userProfile.value?.copy(
@@ -71,7 +83,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 phone = phone,
                 villageName = villageName,
                 profileImageUrl = imageUrl,
-                updatedAt = com.google.firebase.Timestamp.now()
+                updatedAt = Timestamp.now()
             ) ?: UserModel(
                 uid = uid,
                 fullName = fullName,
